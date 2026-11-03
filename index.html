@@ -1,0 +1,1028 @@
+<meta name="robots" content="noindex,nofollow"><title>Прототип сайта IM BAU</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Оболонка: навігація зліва, макет у центрі, нотатки справа. Макет завжди «папір», оболонка стежить за темою. */
+:root{
+  --bg:#eef1ee;--panel:#fbfcfa;--fg:#1d2522;--muted:#5c6a64;--line:#d3dad5;--accent:#2f7d12;--accent-soft:#e2f0d8;--warn:#8a5a00;--warn-soft:#fbefd2;
+  --f:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,Arial,sans-serif;--mono:"IBM Plex Mono",Consolas,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141916;--panel:#1c2320;--fg:#e6ece8;--muted:#9aa8a1;--line:#323d38;--accent:#8fd65f;--accent-soft:#25341d;--warn:#f0c668;--warn-soft:#3a2f14;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141916;--panel:#1c2320;--fg:#e6ece8;--muted:#9aa8a1;--line:#323d38;--accent:#8fd65f;--accent-soft:#25341d;--warn:#f0c668;--warn-soft:#3a2f14;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--f);margin:0}
+button,input,select,textarea{font:inherit}
+.shell-top{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--panel);border-bottom:1px solid var(--line)}
+.shell-top b{font-size:15px}
+.shell-top .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:transparent;color:var(--fg);border:0;padding:5px 11px;cursor:pointer;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.shell-sel{display:none;min-width:0;max-width:100%;flex:1 1 220px;padding:6px 8px;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:6px}
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr) 320px;align-items:start}
+.nav,.notes{background:var(--panel);position:sticky;top:0;max-height:100vh;max-height:100dvh;overflow:auto;padding:14px}
+.nav{border-right:1px solid var(--line)}.notes{border-left:1px solid var(--line)}
+.nav h4{font:600 11px/1.3 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:16px 0 5px}
+.nav a{display:flex;justify-content:space-between;gap:6px;padding:3px 7px;border-radius:5px;color:var(--fg);text-decoration:none;font-size:13.5px;line-height:1.35}
+.nav a:hover{background:var(--accent-soft)}.nav a[aria-current="page"]{background:var(--accent);color:var(--panel)}
+.nav a small{font:10px/1.5 var(--mono);opacity:.75;white-space:nowrap}
+.stage{min-width:0;padding:16px;display:flex;flex-direction:column;gap:12px}
+.pagehead{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+.pagehead h1{font-size:20px;margin:0;text-wrap:balance}
+.pagehead code{font:12.5px var(--mono);color:var(--muted);overflow-wrap:anywhere}
+.tag{font:11px/1.6 var(--mono);padding:0 6px;border-radius:4px;background:var(--accent-soft);color:var(--fg)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+.frame{margin-inline:auto;width:100%;background:#fff;border:1px solid var(--line);border-radius:8px;position:relative;overflow:hidden;overflow:clip}
+.frame.phone{max-width:390px;border-width:6px;border-color:#28302c;border-radius:22px}
+.notes h2{font-size:15px;margin:0 0 8px}
+.tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:5px;padding:4px 9px;cursor:pointer;font-size:13px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--panel);border-color:var(--accent)}
+.note{padding:8px;border-radius:6px;display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px;font-size:13.5px;line-height:1.42;cursor:pointer;border:1px solid transparent}
+.note:hover{background:var(--accent-soft)}.note.on{border-color:var(--accent);background:var(--accent-soft)}
+.note i{font:600 11px/22px var(--mono);width:22px;height:22px;text-align:center;border-radius:50%;background:var(--accent);color:var(--panel);font-style:normal}
+.note b{display:block}.note .m{font:11.5px/1.45 var(--mono);color:var(--muted);margin-top:3px}
+.mk-table{width:100%;border-collapse:collapse;font-size:13px}
+.mk-table td,.mk-table th{border-bottom:1px solid var(--line);padding:5px 6px;vertical-align:top;text-align:left}
+.mk-table td:first-child{white-space:nowrap;font-weight:600}
+.notes ul{padding-left:18px;margin:6px 0;font-size:13.5px}.notes dl{font-size:13px;margin:0}.notes dt{font:600 11px var(--mono);color:var(--muted);margin-top:8px}.notes dd{margin:0;overflow-wrap:anywhere}
+.overview{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:clamp(14px,3vw,28px);max-width:1040px}
+.overview h2{font-size:17px;margin:22px 0 6px}.overview p{max-width:70ch}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}
+.ov-grid>div{border-top:2px solid var(--accent);padding-top:7px;font-size:14px}
+.tw{overflow-x:auto}.overview table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:620px}
+.overview th,.overview td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.overview th{font:600 11px var(--mono);color:var(--muted);text-transform:uppercase}
+.overview a{color:var(--accent)}
+.shell.ov{grid-template-columns:220px minmax(0,1fr)}
+#navbtn{display:none}
+.frame:not(.phone){min-width:780px}
+@media (max-width:1061px){.stage:has(.frame:not(.phone)){overflow-x:auto}}
+@media (max-width:1359px){.shell{grid-template-columns:230px minmax(0,1fr)}.shell.ov{grid-template-columns:230px minmax(0,1fr)}.notes{grid-column:2;position:static;max-height:none;border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:900px){.shell,.shell.ov{grid-template-columns:minmax(0,1fr)}.nav{display:none}.nav.open{display:block;position:fixed;inset:0 auto 0 0;width:min(85vw,300px);z-index:70;box-shadow:0 0 30px #0006;padding-top:max(14px,env(safe-area-inset-top,0px))}.notes{grid-column:1}#navbtn{display:inline-flex}}
+@media (max-width:760px){.stage{padding:10px max(10px,env(safe-area-inset-right,0px)) 10px max(10px,env(safe-area-inset-left,0px))}.frame.phone{border-width:1px;border-radius:8px}}
+
+/* Каркас макета: свої кольори, не залежить від теми */
+.wf{--i:#1f2724;--m:#5f6b66;--l:#c9d0cc;--s:#f1f3f1;--g:#66c400;--gd:#3f7d00;--y:#fff3c9;--r:#b3261e;container-type:inline-size;color:var(--i);background:#fff;font:15px/1.45 var(--f);color-scheme:light}
+.wf a{color:var(--i)}.wf h1,.wf h2,.wf h3{margin:0;line-height:1.2;text-wrap:balance}.wf h1{font-size:24px}.wf h2{font-size:19px}.wf h3{font-size:15px}.wf p{margin:0}
+.wrap{padding-inline:12px;display:flex;flex-direction:column;gap:18px;padding-block:14px}
+.bk{position:relative;min-width:0}
+.mk{position:absolute;top:-15px;left:-10px;z-index:5;width:20px;height:20px;border-radius:50%;border:1.5px solid #fff;background:#0b57a4;color:#fff;font:600 10px/16px var(--mono);padding:0;cursor:pointer;text-align:center}
+.bk.on{outline:2px solid #0b57a4;outline-offset:3px;border-radius:3px}
+.nomk .mk{display:none}.nomk .bk.on{outline:0}
+.bx{border:1px solid var(--l);border-radius:6px;padding:12px}.bx.s{background:var(--s);border-color:var(--s)}
+.img{background:repeating-linear-gradient(135deg,#eceeed 0 7px,#f6f7f6 7px 14px);border:1px solid var(--l);border-radius:4px;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--m);font:11px/1.3 var(--mono);padding:6px;min-height:44px;width:100%}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:6px;border:1px solid var(--i);background:#fff;color:var(--i);border-radius:5px;padding:9px 13px;font-weight:600;cursor:pointer;text-decoration:none;min-height:42px;font-size:14px;text-align:center}
+.btn.p{background:var(--g);border-color:var(--gd)}.btn.l{border-color:var(--l);font-weight:500}.btn.sm{padding:4px 9px;min-height:34px;font-size:13px}.btn.w{width:100%}
+.btn:focus-visible,.wf a:focus-visible,.mk:focus-visible,.wf input:focus-visible,.wf select:focus-visible,.chip:focus-visible{outline:2px solid #0b57a4;outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.col{display:flex;flex-direction:column;gap:8px;min-width:0}.btw{justify-content:space-between}
+.mut{color:var(--m);font-size:13px}.sm{font-size:13px}.b{font-weight:600}.price{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}.price.xl{font-size:30px}
+.ok{color:var(--gd);font-weight:600;font-size:13px}.no{color:var(--r);font-size:13px}
+.ph{background:var(--y);border:1px dashed #b59a3d;border-radius:3px;padding:0 4px;font-size:.92em}
+.ex{color:#8a5a00;font-size:.8em;margin-left:1px}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--l);border-radius:16px;padding:5px 11px;font-size:13px;background:#fff;color:var(--i);cursor:pointer;text-decoration:none;min-height:34px;white-space:nowrap}
+.chip[aria-pressed="true"],.chip.on{background:var(--i);color:#fff;border-color:var(--i)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
+.g2,.g3,.g4,.g6{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}.g4,.g6{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tile{border:1px solid var(--l);border-radius:6px;padding:10px;text-decoration:none;display:flex;flex-direction:column;gap:6px;background:#fff;min-width:0}
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}.tbl th,.tbl td{border:1px solid var(--l);padding:6px 8px;text-align:left;vertical-align:top}.tbl th{background:var(--s);font-weight:600}
+.tscroll{overflow-x:auto}
+.field{display:flex;flex-direction:column;gap:3px;font-size:13px;min-width:0}.field input,.field select,.field textarea{border:1px solid var(--l);border-radius:5px;padding:9px;background:#fff;color:var(--i);width:100%;font-size:15px}
+.radio{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--l);border-radius:6px;padding:10px;cursor:pointer}.radio.dis{opacity:.62;cursor:not-allowed}.radio input{margin-top:4px}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--l);border-radius:5px;height:38px}.qty button{width:34px;height:36px;border:0;background:transparent;font-size:17px;cursor:pointer;color:var(--i)}.qty input{-webkit-appearance:none;-moz-appearance:textfield;appearance:textfield;padding:0;width:40px;border:0;text-align:center;font-size:15px;background:transparent;color:var(--i)}
+.crumbs{font-size:12.5px;color:var(--m);display:flex;gap:5px;flex-wrap:wrap}.crumbs a{color:var(--m)}
+.tabsw{display:flex;gap:2px;border-bottom:1px solid var(--l);overflow-x:auto;scrollbar-width:thin}.tabsw button{border:0;background:transparent;padding:8px 11px;white-space:nowrap;cursor:pointer;color:var(--i);border-bottom:2px solid transparent;font-size:14px}.tabsw button[aria-selected="true"]{border-color:var(--gd);font-weight:600}
+.faq details{border-bottom:1px solid var(--l);padding:9px 0}.faq summary{cursor:pointer;font-weight:600;font-size:14px}.faq p{padding-top:5px;font-size:14px}
+/* Поля в ряду стоять на одному рівні, кнопка в картці внизу */
+.g2>.field,.g3>.field,.g4>.field{justify-content:flex-end}.bx.col>.btn:last-child{margin-top:auto}.tile>.btn:last-child{margin-top:auto}
+.lines>*{height:9px;background:#e6e9e7;border-radius:2px;margin-bottom:7px}.lines>*:nth-child(3n){width:72%}
+/* Шапка */
+.hd{border-bottom:1px solid var(--l)}
+.hd-top{display:none;font-size:12.5px;padding:5px 12px;background:var(--s);justify-content:space-between;gap:12px}
+.hd-main{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 12px}
+.logo{width:42px;height:42px;border-radius:50%;background:#555;color:#8ee000;font:700 11px/1 var(--f);display:flex;align-items:center;justify-content:center;text-decoration:none;text-align:center;flex:none}.wf a.logo{color:#a4ee2c}
+.search{position:relative;min-width:0;grid-column:1/-1;grid-row:2}.search input{-webkit-appearance:none;appearance:none;width:100%;border:1.5px solid var(--i);border-radius:5px;padding:9px 11px;font-size:15px;background:#fff;color:var(--i)}
+.sugg{position:absolute;left:0;right:0;top:100%;background:#fff;border:1px solid var(--l);box-shadow:0 8px 20px #0003;border-radius:0 0 6px 6px;z-index:20;padding:8px;font-size:13.5px}
+.sugg a{display:block;padding:5px 4px;text-decoration:none}
+.hd-act{display:flex;gap:6px;align-items:center;justify-self:end;grid-column:3}.hd-phone{display:none}.hd-city{font-size:12.5px;grid-column:2;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ic{border:1px solid var(--l);background:#fff;border-radius:5px;min-width:38px;height:38px;padding:0 7px;cursor:pointer;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--i)}
+.hd-nav{display:none}.hd-d{display:none}
+.drawer{position:absolute;inset:0;z-index:40;background:#0006}
+.dr-p{position:absolute;left:0;right:0;margin-inline:auto;width:min(calc(100% - 20px),480px);background:#fff;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px #0005}
+.dr-x{position:absolute;top:6px;right:6px;width:36px;height:36px;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--i)}
+.ftr{background:#3a403d;color:#fff;padding:0 12px;margin-top:10px;font-size:13.5px}.ftr a{color:#fff;display:block;padding:4px 0}
+.fgrid{display:grid;gap:0;padding-block:8px;grid-template-columns:minmax(0,1fr)}
+.fcol{border-bottom:1px solid #fff3;padding-block:8px}.fcol summary{font-weight:600;cursor:pointer;padding:4px 0;min-height:32px}.fcol span{display:block;padding:2px 0}
+.fbar{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:space-between;padding-block:10px;border-top:1px solid #fff3;font-size:12.5px}.fbar .row{gap:4px 12px}.fbar a{padding:2px 0}.flegal{opacity:.85}
+.flink{background:transparent;border:0;color:#fff;text-decoration:underline;cursor:pointer;padding:2px;font-size:inherit}
+.mega{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}.mroots{display:flex;flex-direction:column;gap:1px;max-height:420px;overflow:auto}.mroots b{padding:7px 0 2px}.mroots button{display:flex;justify-content:space-between;gap:6px;border:0;background:transparent;text-align:left;padding:7px 6px;min-height:36px;cursor:pointer;color:var(--i);border-radius:4px;font-size:13.5px}.mroots button:hover,.mroots button.on{background:var(--s)}
+.msub{display:grid;gap:2px 14px;grid-template-columns:minmax(0,1fr)}.msub a{padding:5px 0;font-size:14px}
+/* Перший екран головної */
+.hero3{display:grid;gap:8px;grid-template-columns:minmax(0,1fr)}.hcats{display:none}.hside{display:none;grid-template-columns:minmax(0,1fr);gap:8px}
+.catg .tile:nth-child(n+7){display:none}.catall{display:inline-block;margin-top:8px}.hbanner,.hside a{text-decoration:none;display:block;min-width:0}
+.hcats{position:relative}.hcats .hc-a{display:flex;justify-content:space-between;gap:6px;padding:4px 7px;font-size:12.5px;line-height:1.25;text-decoration:none;border-bottom:1px solid var(--s)}
+.hc:hover>.hc-a,.hc:focus-within>.hc-a,.hc.open>.hc-a{background:var(--s)}
+/* Підрозділи праворуч поверх банера; затримка, щоб панель не блимала при русі мишею */
+.hc-f{position:absolute;left:calc(100% + 6px);top:0;min-height:100%;width:600px;max-width:calc(100cqw - 210px);z-index:30;background:#fff;border:1px solid var(--l);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.12);padding:12px 14px;display:flex;flex-direction:column;gap:8px;visibility:hidden;opacity:0;transition:visibility 0s .12s,opacity .1s .12s}
+.hc-f::before{content:"";position:absolute;left:-8px;top:0;bottom:0;width:8px}
+.hc:hover>.hc-f,.hc:focus-within>.hc-f,.hc.open>.hc-f{visibility:visible;opacity:1}
+.hcats:has(.hc.open) .hc:not(.open):not(:hover)>.hc-f{visibility:hidden;opacity:0}
+.hc-f .msub{grid-template-columns:repeat(2,minmax(0,1fr))}.hc-f .msub a{font-size:13.5px}.hc-f>.sm{margin-top:auto}
+.h1s{font-size:18px!important;font-weight:600}
+.bnav{position:sticky;bottom:0;z-index:12;background:#fff;border-top:1px solid var(--l);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom,0px)}
+.bnav a,.bnav button{border:0;background:transparent;color:var(--i);font-size:11px;line-height:1.25;padding:7px 2px;text-align:center;text-decoration:none;cursor:pointer;min-height:44px}
+.bdg{background:var(--i);color:#fff;font-size:11px;line-height:17px;padding:0 5px;border-radius:3px}.pc-ic{min-width:28px;width:28px;height:28px;padding:0}.pc-out .img{opacity:.55}
+.strip{padding-block:2px}.chipi{display:inline-flex;gap:6px;align-items:center;font-size:13px;text-decoration:none;padding:4px 10px 4px 4px;border:1px solid var(--l);border-radius:20px;white-space:nowrap;min-height:34px}.chipi .dot{width:24px;height:24px;border-radius:50%;background:var(--s);flex:none}
+.logos{margin-top:6px}.sortrow{align-items:center}
+.bk:has(>.anch){position:sticky;top:0;z-index:9}.anch{background:#fff;padding-block:5px;display:flex;gap:10px;align-items:center;justify-content:space-between}.anch .chips{min-width:0;flex:1}.anch-buy{display:none;gap:8px;align-items:center;flex:none}
+.navcur{font-weight:600;background:var(--s);border-radius:3px;padding:2px 5px;text-decoration:none}
+.alertbar{padding:3px 0}.kh-strip{background:var(--s);padding:5px 12px;text-align:center}
+/* Картка товару у списку */
+.pc{border:1px solid var(--l);border-radius:6px;padding:9px;display:grid;grid-template-columns:minmax(0,1fr);grid-row:span 9;grid-template-rows:subgrid;row-gap:0;min-width:0;background:#fff}
+.pc>*{padding-bottom:6px;min-width:0}.pc>:empty{padding-bottom:0}.pc>.pc-b{padding-bottom:0;align-self:end;display:flex;flex-direction:column;gap:6px}
+.pc-h{display:flex;align-items:center;justify-content:space-between;gap:4px;flex-wrap:nowrap}.pc-br{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pc-icons{display:flex;gap:3px;flex:none}
+.pc-i{position:relative}.pc-i .bdg{position:absolute;top:6px;left:6px}
+.pc .t{font-size:13.5px;line-height:1.3;text-decoration:none;font-weight:500;overflow-wrap:anywhere}
+.pc .qty{display:flex;width:100%;justify-content:space-between}.pc .qty input{flex:1 1 0;width:auto;min-width:0}
+.pc .act{display:flex;flex-wrap:wrap;gap:5px}.pc .act .btn{flex:1 1 auto;padding-inline:8px;white-space:nowrap}
+@supports not (grid-template-rows:subgrid){.pc{display:flex;flex-direction:column}.pc>.pc-b{margin-top:auto}}
+.sticky-buy{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--l);padding:8px 12px max(8px,env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center;z-index:10}
+.sticky-buy .btn{flex:1}
+.ic.on,.pc-ic.on{background:var(--i);color:#fff;border-color:var(--i)}.chipi.cur{font-weight:700;text-decoration:underline}input.err{outline:2px solid var(--r);outline-offset:1px}
+.shell.demo{display:block}.shell.demo .stage{padding-top:0}.shell.demo .frame:not(.phone){border-radius:0;border-width:0;min-width:0}.demo-note{font-size:13px;color:var(--muted)}@media (max-width:760px){.demo-dev{display:none}.shell.demo .stage{padding:0}.shell.demo .frame.phone{max-width:none;border:0;border-radius:0}.demo-note{flex-basis:100%}}
+.mfoot{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--l);padding-top:8px;display:grid;gap:6px;z-index:2}
+.acc{border:1px solid var(--l);border-radius:8px;padding:0 10px}.acc summary{font-weight:600;padding:11px 0;cursor:pointer}.acc .col{padding-bottom:10px}
+.pdp{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}
+.lay{display:grid;gap:14px;grid-template-columns:minmax(0,1fr)}.lay .side{display:none}.mobfilter.row{position:sticky;top:0;background:#fff;z-index:8;padding-block:5px}
+.bar{height:7px;background:var(--s);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g)}
+.step{display:flex;gap:8px;font-size:13px;flex-wrap:wrap}.step b{background:var(--i);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;flex:none}
+.swatch{aspect-ratio:1;border-radius:5px;border:1px solid var(--l)}
+@container (min-width:560px){.g3,.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g4{grid-template-columns:repeat(3,minmax(0,1fr))}.g6{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container (min-width:720px){
+  .wrap{padding-inline:20px;gap:24px;padding-block:18px}.wf h1{font-size:28px}.wf h2{font-size:21px}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g6{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .hd-top{display:flex}.hd-main{grid-template-columns:auto minmax(0,1fr) auto;padding:10px 20px;gap:16px}.search{grid-column:2;grid-row:1}.hd-city{display:none}.hd-act{grid-column:3}.hd-d{display:inline-flex}.hd-phone{display:block;font-size:13px;line-height:1.25}.hd-act .burger{display:none}
+  .hd-nav{display:flex;gap:16px;padding:0 20px 8px;font-size:14px;flex-wrap:wrap;align-items:center}.hd-nav a{text-decoration:none}.hd-nav .btn{min-height:34px;padding:5px 12px}
+  .logo{width:52px;height:52px}.ftr{padding:6px 20px 0}.fgrid{grid-template-columns:1.25fr 1fr 1fr 1fr 1.25fr;gap:18px;padding-block:14px}.fcol{border:0;padding:0}.fcol summary{list-style:none;cursor:default;pointer-events:none}.fcol summary::-webkit-details-marker{display:none}
+  .dr-p.wide{width:calc(100% - 40px);max-width:880px}.mega{grid-template-columns:270px minmax(0,1fr)}.msub{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pdp{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);align-items:start}
+  .lay{grid-template-columns:220px minmax(0,1fr);align-items:start}.lay .side{display:block;align-self:stretch}.lay .mobfilter{display:none}
+  .sticky-buy{display:none}.bnav{display:none}.anch-buy{display:flex}.checkout-sum{position:sticky;top:12px}.stick{position:sticky;top:10px;max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);overflow:auto}.hd-main{background:#fff}
+  .hero3{grid-template-columns:190px minmax(0,1fr) 170px;align-items:stretch}.hbanner .img,.hside .img{height:100%;aspect-ratio:auto!important}.hside a{min-height:0}.hside{grid-template-rows:1fr 1fr}.hcats{display:block;border:1px solid var(--l);border-radius:6px;padding:3px}.hside{display:grid}
+}
+@container (max-width:719px){.checkout-sum{position:sticky;bottom:0;background:#fff;z-index:8;box-shadow:0 -4px 12px #0002}}
+/* Планшет і малий ноутбук: колонка фільтрів лишається, карток у ряду менше */
+@container (min-width:720px) and (max-width:899px){.lay .g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g6{grid-template-columns:repeat(4,minmax(0,1fr))}.hero3{grid-template-columns:170px minmax(0,1fr)}.hside{display:none!important}}
+@container (min-width:900px) and (max-width:1179px){.lay .g4{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* Сенсорні екрани: iPhone не збільшує сторінку при фокусі, цілі достатні для пальця */
+@media (pointer:coarse){
+  .wf input:not([type=checkbox]):not([type=radio]),.wf select,.wf textarea,#sel{font-size:16px}
+  .pc-ic{min-width:32px;width:32px;height:32px}
+  .wf .row>a:not(.btn):not(.chip):not(.ic),.wf .col>a:not(.btn):not(.chip):not(.ic),.wf .tile a:not(.btn):not(.chip){display:inline-block;padding-block:5px}
+  .wf input[type=checkbox],.wf input[type=radio]{width:20px;height:20px;flex:none}
+  .wf .tile{-webkit-tap-highlight-color:transparent}
+}
+/* Картка поруч із товарами займає ту саму висоту */
+.g2:has(>.pc)>:not(.pc),.g3:has(>.pc)>:not(.pc),.g4:has(>.pc)>:not(.pc),.g6:has(>.pc)>:not(.pc){grid-row:span 9}
+@media (pointer:coarse){
+  .wf .hd-nav a,.wf .hd-top a,.wf .hd-top .flink,.wf .hd-phone button{display:inline-block;padding-block:6px;height:auto}
+  .wf .hcats .hc-a{padding-block:8px}.wf .pc .t{padding-block:3px}.wf .row.btw>a{padding-inline:4px}
+}
+@media (pointer:coarse){.wf .hd-phone .ic{height:auto!important;padding-block:6px!important}.wf .pc .t{padding-block:5px}.wf .hd-top .flink{padding:6px}}
+.g2:has(>.col)>.img{align-self:stretch;aspect-ratio:auto!important;min-height:180px}
+.mfoot .row{align-items:stretch}
+@media (pointer:coarse){.wf .row.btw>a{padding-inline:8px}}
+
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));background:#1f2724;color:#fff;padding:8px 13px;border-radius:6px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
+</style>
+<div class="shell-top"><b>IM BAU · прототип</b><label class="sm">Страница: <select id="sel" aria-label="Страница"></select></label><span class="sp"></span><span class="seg" role="group" aria-label="Версия сайта"><button data-region="ua">Україна</button><button data-region="kharkiv">Харків</button></span><span class="seg demo-dev" role="group" aria-label="Устройство"><button data-dev="phone">Телефон</button><button data-dev="desk">ПК</button></span><span class="demo-note">Схема без дизайна. Товары и цены примерные, заказы никуда не отправляются.</span></div>
+<div class="shell demo"><nav id="nav" hidden></nav><main class="stage" id="stage"></main></div>
+<div id="toast" role="status" hidden></div>
+<script>
+const DEMO = true;
+const ia = () => "";
+const X = DEMO ? '' : '<sup class="ex" title="Приклад: товару чи значення ще немає на сайті">※</sup>';
+const PAGES = [];
+const page = d => PAGES.push(d);
+const f1 = n => n.toFixed(1).replace('.', ',');
+const uah = n => n.toLocaleString('uk-UA', {maximumFractionDigits: 2}) + ' грн';
+const ph = t => `${t}${X}`;
+const go = (id, t, c = '') => `<a href="#${id}" data-go="${id}"${c ? ` class="${c}"` : ''}>${t}</a>`;
+const B = (n, inner, c = '') => `<section class="bk ${c}" data-n="${n}">${DEMO ? '' : `<button class="mk" data-mk="${n}" aria-label="Нотатка ${n}">${n}</button>`}${inner}</section>`;
+const img = (t, r = '4/3') => `<div class="img" style="aspect-ratio:${r}">${t}</div>`;
+const crumbs = a => `<nav class="crumbs" aria-label="Хлібні крихти">${go('home', S.region === 'kharkiv' ? 'Харків' : 'Головна')}${a.map(x => Array.isArray(x) ? ` <span>›</span> ${go(x[0], x[1])}` : ` <span>›</span> <span>${x}</span>`).join('')}</nav>`;
+const lines = n => `<div class="lines">${'<div></div>'.repeat(n)}</div>`;
+const faq = a => `<div class="faq">${a.map(([q, t]) => `<details><summary>${q}</summary><p>${t}</p></details>`).join('')}</div>`;
+const wrap = s => `<div class="wrap">${s}</div>`;
+
+const STORE = 'ТЦ «Казка», вул. Холодногірська, 2';
+const PROD = {
+  acr: {name: "Фарба водоемульсійна акрилова інтер'єрна Front", cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, tint: 1, badge: 'Хіт', stock: 37, step: [5, 595], packs: [['1,5 кг', 1.5, 145], ['3 кг', 3, 268], ['7 кг', 7, 628]], sel: 2},
+  mat: {name: 'Фарба водоемульсійна маттлатекс Front', cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, tint: 1, stock: 21, packs: [['1,5 кг', 1.5, 171], ['3 кг', 3, 331], ['7 кг', 7, 731]], sel: 2},
+  fac: {name: 'Фарба водоемульсійна фасадна Front', cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, tint: 1, stock: 14, packs: [['1,5 кг', 1.5, 180], ['3 кг', 3, 348], ['7 кг', 7, 790]], sel: 2},
+  sat: {name: 'Фарба Front Satinlatex шовковисто-матова', cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, badge: 'Новинка', stock: 9, packs: [['1,22 кг', 1.22, 268]], sel: 0},
+  lor: {name: 'Фарба лесуюча Front', cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, state: 'order', packs: [['1 кг', 1, 202]], sel: 0},
+  gre: {name: 'Фарба матова біла Greenlatex FRONT', cat: 'lfm', brand: 'FRONT', unit: 'л', real: 1, state: 'out', packs: [['0,9 л', 0.9, 234]], sel: 0},
+  ven: {name: 'Венеціанська штукатурка декоративна Front', cat: 'lfm', brand: 'FRONT', unit: 'кг', real: 1, stock: 6, packs: [['1,5 кг', 1.5, 174]], sel: 0},
+  tape: {name: 'Стрічка малярська Front 50 мм × 20 м', cat: 'tool', brand: 'FRONT', unit: 'рул.', real: 1, stock: 120, packs: [['рулон', 0.15, 35]], sel: 0},
+  gs41: {name: 'Штукатурка гіпсова GS-41 Start TIGOR', cat: 'mix', brand: 'TIGOR', unit: 'кг', stock: 240, vol: 0.02, step: [20, 245], packs: [['15 кг', 15, 258]], sel: 0},
+  tm12: {name: 'Клей для плитки TIGOR TM-12', cat: 'mix', brand: 'TIGOR', unit: 'кг', badge: 'Хіт', stock: 310, vol: 0.03, packs: [['25 кг', 25, 297]], sel: 0},
+  gkl: {name: 'Гіпсокартон стіновий 2500×1200×12,5 мм', cat: 'sheet', brand: 'Knauf', unit: 'м²', perUnit: 3, stock: 180, vol: 0.04, step: [30, 425], minq: '1 лист', packs: [['лист 3 м²', 28, 448]], sel: 0},
+};
+const LISTING = ['acr', 'mat', 'fac', 'sat', 'gs41', 'tm12', 'gkl', 'ven'];
+const SEC_MIX = 'Сухі суміші, цемент, кладка', SEC_GKL = 'Гіпсокартонні системи', SEC_LFM = 'ЛФМ: фарби, ґрунтовки, лаки';
+[['acr', SEC_LFM, 'Фарби інтер’єрні', ['Для стін', 'Для стелі']], ['mat', SEC_LFM, 'Фарби інтер’єрні', ['Для стін', 'Для стелі']], ['fac', SEC_LFM, 'Фасадні фарби', ['Для фасаду']], ['sat', SEC_LFM, 'Фарби інтер’єрні', ['Для стін']], ['lor', SEC_LFM, 'Лаки', ['Для стін']], ['gre', SEC_LFM, 'Фарби інтер’єрні', ['Для стелі']], ['ven', SEC_MIX, 'Декоративні штукатурки', ['Для стін']], ['tape', 'Ручний інструмент', 'Малярний', []], ['gs41', SEC_MIX, 'Штукатурки', ['Для стін']], ['tm12', SEC_MIX, 'Клеї для плитки', ['Для підлоги', 'Для стін']], ['gkl', SEC_GKL, 'Гіпсокартон', ['Для стін', 'Для стелі']]].forEach(([id, sec, sub, use]) => Object.assign(PROD[id], {sec, sub, use}));
+if (DEMO) [['shp', 'Шпаклівка фінішна TIGOR 20 кг', SEC_MIX, 'Шпаклівки', 'TIGOR', 236, 20, ['Для стін', 'Для стелі']], ['grn', 'Ґрунтовка глибокого проникнення TIGOR 10 л', SEC_MIX, 'Ґрунтовки', 'TIGOR', 412, 10, ['Для стін', 'Для підлоги']], ['stz', 'Стяжка цементна TIGOR 25 кг', SEC_MIX, 'Стяжки та вирівнювачі', 'TIGOR', 189, 25, ['Для підлоги']], ['cd', 'Профіль CD 60×27, 3 м', SEC_GKL, 'Профіль', 'Knauf', 118, 1.5, []], ['ud', 'Профіль UD 27×28, 3 м', SEC_GKL, 'Профіль', 'Knauf', 92, 1.1, []], ['psb', 'Пінопласт ПСБ-С-25, 50 мм, 1×1 м', 'Утеплювачі та ізоляція', 'Пінопласт', 'Інші', 96, 1.3, ['Для фасаду']], ['min', 'Мінвата 50 мм, упаковка 6 м²', 'Утеплювачі та ізоляція', 'Мінвата', 'Knauf', 642, 6, ['Для фасаду', 'Для стін']], ['sam', 'Саморізи по гіпсокартону 3,5×25, 200 шт', 'Кріплення та метизи', 'Саморізи', 'Інші', 96, 0.4, []], ['dub', 'Дюбель 6×40, 100 шт', 'Кріплення та метизи', 'Дюбеля', 'Інші', 58, 0.2, []], ['pet', 'Петля дверна 100 мм', 'Двері, фурнітура', 'Петлі', 'Інші', 74, 0.2, []], ['zam', 'Замок врізний', 'Двері, фурнітура', 'Замки', 'Інші', 385, 0.6, []], ['krn', 'Кран кульовий 1/2 дюйма', 'Сантехніка', 'Крани', 'Інші', 165, 0.2, []], ['zmi', 'Змішувач для кухні', 'Сантехніка', 'Змішувачі', 'Інші', 1290, 1.1, []], ['kab', 'Кабель ВВГ 3×2,5, 1 м', 'Електрика', 'Кабель', 'Інші', 48, 0.15, []], ['roz', 'Розетка подвійна із заземленням', 'Електрика', 'Розетки та вимикачі', 'Інші', 139, 0.1, []], ['shpa', 'Шпатель фасадний 300 мм', 'Ручний інструмент', 'Будівельний', 'Інші', 142, 0.3, []], ['val', 'Валик малярний 180 мм', 'Ручний інструмент', 'Малярний', 'Інші', 118, 0.2, []], ['dri', 'Дриль ударний 750 Вт', 'Електроінструмент', 'Мережевий інструмент', 'Інші', 1890, 2.2, []], ['dis', 'Диск відрізний 125 мм', 'Оснастка для інструменту', 'Диски', 'Інші', 38, 0.1, []], ['bur', 'Бур SDS-plus 8×160 мм', 'Оснастка для інструменту', 'Свердла та бури', 'Інші', 72, 0.1, []], ['ved', 'Відро будівельне 12 л', 'Господарські товари', 'Відра та тази', 'Інші', 84, 0.4, []], ['ruk', 'Рукавички робочі, пара', 'Господарські товари', 'Рукавички', 'Інші', 29, 0.05, []]].forEach(([id, name, sec, sub, brand, c, w, use], k) => { PROD[id] = {name, cat: 'x', sec, sub, brand, use, unit: 'шт', stock: 12 + k * 7, packs: [['шт', w, c]], sel: 0}; });
+
+const S = {cart: DEMO ? [] : [{id: 'acr', pack: 2, qty: 1}, {id: 'tape', pack: 0, qty: 2}], fav: [], cmp: [], seen: [], orders: [], form: {}, sort: 'rec', more: 0, region: 'ua', city: 'Інше місто України', pdp: 'acr', tab: 0, zero: 0};
+const unitPrice = (p, i) => { const [, w, c] = p.packs[i]; const u = p.perUnit || w; return p.unit === 'рул.' || p.unit === 'шт' ? '' : `${(c / u).toLocaleString('uk-UA', {maximumFractionDigits: 2})} грн/${p.unit}`; };
+const cartWeight = () => S.cart.reduce((s, x) => s + PROD[x.id].packs[x.pack][1] * x.qty, 0);
+const cartSum = () => S.cart.reduce((s, x) => s + PROD[x.id].packs[x.pack][2] * x.qty, 0);
+const cartCount = () => S.cart.reduce((s, x) => s + x.qty, 0);
+const npBlock = () => S.cart.some(x => PROD[x.id].cat === 'lfm') ? 'у кошику є фарба: ЛФМ Новою поштою не відправляємо' : (S.cart.some(x => PROD[x.id].packs[x.pack][1] > 30 || PROD[x.id].cat === 'sheet') ? 'вага або габарит понад ліміт Нової пошти (30 кг)' : '');
+const addCart = (id, pack, qty = 1) => { let e = S.cart.find(x => x.id === id && x.pack === pack); if (e) e.qty += qty; else S.cart.push(e = {id, pack, qty}); S.last = {e, qty}; };
+
+const qtyCtl = (id, v = 1) => `<span class="qty" data-qty="${id}"><button type="button" data-dq="-1" aria-label="Менше">−</button><input id="q-${id}" inputmode="numeric" value="${v}" aria-label="Кількість"><button type="button" data-dq="1" aria-label="Більше">+</button></span>`;
+
+function pcard(id, opt = {}) {
+  const p = PROD[id], i = p.sel, [lab, w, c] = p.packs[i], st = p.state || 'ok', heavy = p.cat === 'lfm' || w > 30 || p.cat === 'sheet';
+  return `<article class="pc${st === 'out' ? ' pc-out' : ''}">
+    <div class="pc-h"><span class="pc-br mut">${p.brand}${p.real ? '' : X}</span><span class="pc-icons"><button class="ic pc-ic hd-d" title="Швидкий перегляд" aria-label="Швидкий перегляд" data-quick="${id}">⌕</button><button class="ic pc-ic ${S.cmp.includes(id) ? 'on' : ''}" title="Порівняти" aria-label="Порівняти" aria-pressed="${S.cmp.includes(id)}" data-cmp="${id}">⇄</button><button class="ic pc-ic ${S.fav.includes(id) ? 'on' : ''}" title="В обране" aria-label="В обране" aria-pressed="${S.fav.includes(id)}" data-fav="${id}">${S.fav.includes(id) ? '♥' : '♡'}</button></span></div>
+    <div class="pc-i">${img('фото товару', '1/1')}${p.badge ? `<span class="bdg">${p.badge}</span>` : ''}</div>
+    <a href="#pdp" class="t" data-pdp="${id}" data-go="pdp">${p.name}</a>
+    <div class="sm mut">${lab}${w >= 10 && !lab.includes('кг') ? ` · ${w} кг` : ''}</div>
+    <div><span class="price">${uah(c)}</span> <span class="mut">/ ${lab.includes('лист') ? 'лист' : p.unit === 'рул.' ? 'рулон' : p.unit === 'шт' ? 'шт' : 'уп.'}</span>${unitPrice(p, i) ? `<div class="sm mut">${unitPrice(p, i)}</div>` : ''}</div>
+    <div class="sm">${p.step ? `Від ${p.step[0]} шт.: <b>${uah(p.step[1])}</b>${X}` : ''}</div>
+    ${st === 'ok' ? `<div class="ok">Є в магазині: ${p.stock} шт.${X}</div>` : st === 'order' ? `<div class="sm b">Під замовлення${X}</div>` : `<div class="no">Очікується${X}</div>`}
+    <div class="sm mut">${st === 'ok' ? '🏬 сьогодні ' : '🏬 '}· 🚚${heavy ? ' · без Нової пошти' : ' · 📦'}</div>
+    <div class="pc-b">${st === 'out' ? `<button class="btn l sm w" data-open="notify">Повідомити про надходження</button>` : `${opt.noqty ? '' : qtyCtl('l' + id)}<div class="act"><button class="btn p sm" data-add="${id}">До кошика</button><button class="btn l sm" data-open="oneclick" data-pid="${id}" title="Швидке замовлення">1 клік</button></div>`}</div>
+  </article>`;
+}
+
+const header = () => `<header class="hd">${S.region === 'kharkiv' ? `<div class="sm kh-strip">Сайт для Харкова: самовивіз сьогодні, наша машина по місту. <button class="ic" style="height:24px" data-region="ua">Перейти на всю Україну</button></div>` : ''}
+  <div class="hd-top"><div class="row"><span>${STORE}</span><span>Пн-Сб 9:00-19:50, Нд 10:00-18:00</span></div><div class="row">${go('delivery', 'Доставка та оплата')}${go('tracking', 'Де моє замовлення?')}${go('login', 'Увійти')}<span>UA | ${DEMO ? `<button class="flink" data-toast="Російська версія з'явиться разом із запуском">RU</button>` : go('home', 'RU')}</span></div></div>
+  <div class="hd-main">
+    ${go('home', 'IM<br>BAU', 'logo')}
+    <button class="ic hd-city" data-open="city" style="justify-self:start;max-width:100%">${S.region === 'kharkiv' ? 'Харків' : 'Україна'} ▾</button>
+    <div class="search"><input id="wf-search" type="search" value="${DEMO ? esc(S.q || '') : ''}" placeholder="Назва, бренд або артикул" aria-label="Пошук"><div class="sugg" hidden></div></div>
+    <div class="hd-act">
+      <div class="hd-phone"><b>+38 (098) 332-30-30</b><br><button class="ic" style="height:24px;border:0;padding:0;text-decoration:underline" data-open="callback">Замовити дзвінок</button></div>
+      ${go("compare", "⇄" + (S.cmp.length ? ' ' + S.cmp.length : ''), "ic hd-d")}${go("compare", "♡" + (S.fav.length ? ' ' + S.fav.length : ''), "ic hd-d")}
+      <a href="#cart" data-go="cart" class="ic" aria-label="Кошик"><b>🛒</b> <span id="cart-n">${cartCount()}</span></a>
+      <button class="ic burger" data-open="menu" aria-label="Меню">☰</button>
+    </div>
+  </div>
+  <nav class="hd-nav"><button class="btn p" data-open="menu">☰ Каталог</button>${go('promo', 'Акції')}${go('tinting', 'Колерування')}${go('podbor', 'Підбір матеріалів')}${go('evid', 'єВідновлення')}${go('brand-front', 'FRONT')}${go('brand-tigor', 'TIGOR')}${go('stores', 'Магазин')}${go('blog', 'Поради')}<button class="btn l sm" data-open="quote">Прорахувати список</button><button class="ic" data-open="city" style="height:30px;margin-left:auto">Ваше місто: ${S.region === 'kharkiv' ? 'Харків' : 'вся Україна'} ▾</button></nav>
+</header>`;
+const fcol = (h, body, keep) => `<details class="fcol" ${keep || UI.dev !== 'phone' ? 'open' : ''}><summary>${h}</summary><nav class="col" style="gap:0" aria-label="${h}">${body}</nav></details>`;
+const footer = () => `<footer class="ftr"><div class="fgrid">
+  ${fcol('Каталог', CATS.slice(0, 7).map(c => go('hub', c[0])).join('') + go('catalog', 'Усі розділи ›'))}
+  ${fcol('Покупцям', INFOG[0][1].map(([k, t]) => go(k, t)).join('') + go('loyalty', 'Система знижок') + go('promo', 'Акції') + go('outlet', 'Уцінка'))}
+  ${fcol('Послуги', SERV.map(([k, t]) => go(k, t)).join('') + go('pro', 'Майстрам і бригадам') + go('pricelist', 'Прайс-лист') + go('kit', 'Підбірки товарів'))}
+  ${fcol('IM BAU', go('about', 'Про компанію') + go('stores', 'Магазин і контакти') + go('reviews', 'Відгуки') + go('certs', 'Сертифікати та документи') + go('blog', 'Поради') + go('video', 'Відео') + go('jobs', 'Вакансії'))}
+  ${fcol('Контакти', `<a href="#stores" data-go="stores"><b>+38 (098) 332-30-30</b></a><span>kupuy@imbau.com.ua</span><span>${STORE}</span><span>Пн-Сб 9:00-19:50, Нд 10:00-18:00</span><span class="row" style="margin-top:6px">Viber · Telegram · WhatsApp</span><span>TikTok · Instagram</span>`, 1)}
+  </div>
+  <div class="fbar"><div class="row"><b>Бренди:</b>${go('brand-front', 'FRONT')}${go('brand-tigor', 'TIGOR')}${go('brand-other', 'Knauf')}${go('brands', 'Усі виробники')}</div><div class="row"><b>Версія сайту:</b><button class="flink" data-region="ua">Україна</button><button class="flink" data-region="kharkiv">Харків</button><span>Мова: UA | RU</span></div></div>
+  <div class="fbar flegal"><span>IM BAU © 2026</span><div class="row">${go('privacy', 'Конфіденційність')}${go('offer', 'Публічна оферта')}${go('sitemap', 'Карта сайту')}</div><span>Оплата: LiqPay, картка, рахунок, єВідновлення</span></div>
+</footer>`;
+const INFOG = [
+  ['Покупцям', [['delivery', 'Доставка та оплата'], ['returns', 'Обмін та повернення'], ['warranty', 'Гарантія'], ['tracking', 'Де моє замовлення?'], ['installments', 'Оплата частинами'], ['faq', 'Питання та відповіді']]],
+  ['Вигода', [['loyalty', 'Система знижок'], ['evid', 'єВідновлення'], ['pro', 'Майстрам і бригадам'], ['pricelist', 'Прайс-лист']]],
+  ['Компанія', [['about', 'Про компанію'], ['stores', 'Магазин і контакти'], ['reviews', 'Відгуки'], ['certs', 'Сертифікати та документи'], ['jobs', 'Вакансії']]],
+];
+const INFO = INFOG.flatMap(g => g[1]);
+const infoNav = id => INFOG.map(([h, a]) => `<b class="sm">${h}</b>${a.map(([k, t]) => k === id ? `<a class="navcur" href="#${k}" aria-current="page">${t}</a>` : go(k, t)).join('')}`).join('');
+const infoLay = (id, body) => `<div class="lay"><aside class="side"><nav class="col sm stick" aria-label="Інформація" style="gap:3px">${infoNav(id)}</nav></aside><div class="col" style="gap:18px;min-width:0"><details class="bx sm mobfilter"><summary class="b">Меню розділу</summary><div class="col" style="gap:4px;margin-top:6px">${infoNav(id)}</div></details>${body}</div></div>`;
+const catLay = body => `<div class="lay"><aside class="side"><nav class="bx col sm stick" style="gap:3px" aria-label="Розділи каталогу"><b>Каталог</b>${CATS.map(c => go('hub', c[0])).join('')}</nav></aside><div class="col" style="gap:18px;min-width:0">${body}</div></div>`;
+const CATSIDE = ['promo', 'outlet', 'brands', 'brand-front', 'brand-tigor'];
+const bnav = () => `<nav class="bnav" aria-label="Швидкі дії"><button data-open="menu">☰<br>Каталог</button><a href="#search" data-go="search">⌕<br>Пошук</a><a href="#cart" data-go="cart">🛒 <b id="bnav-n">${cartCount()}</b><br>Кошик</a><a href="#compare" data-go="compare">♡<br>Обране</a><button data-open="callback">☎<br>Контакти</button></nav>`;
+const SERV = [['tinting', 'Колерування'], ['podbor', 'Підбір матеріалів'], ['calc', 'Калькулятори'], ['evid', 'єВідновлення']];
+const servRow = id => `<nav class="chips" aria-label="Послуги">${SERV.map(([k, t]) => `<a class="chip ${k === id ? 'on' : ''}" href="#${k}" data-go="${k}">${t}</a>`).join('')}</nav>`;
+const miniHeader = () => `<header class="hd"><div class="hd-main" style="grid-template-columns:auto minmax(0,1fr) auto">${go('home', 'IM<br>BAU', 'logo')}<a class="sm" href="#cart" data-go="cart">‹ Назад до кошика</a><b class="sm">+38 (098) 332-30-30</b></div></header>`;
+const site = (body, after = '') => { const cur = UI.cur; if (cur === 'checkout') return miniHeader() + wrap(body) + `<footer class="ftr"><div class="fbar flegal"><span>IM BAU © 2026</span><div class="row">${go('privacy', 'Конфіденційність')}${go('offer', 'Публічна оферта')}</div></div></footer>`; return header() + wrap(INFO.some(x => x[0] === cur) ? infoLay(cur, body) : CATSIDE.includes(cur) ? catLay(body) : (SERV.some(x => x[0] === cur) ? servRow(cur) : '') + body) + after + (['pdp', 'cart'].includes(cur) ? '' : bnav()) + footer(); };
+
+const MODALS = {
+  menu: () => {
+    const flat = TREE.flatMap(g => g.r.map(r => ({g: g.g, n: r[0], s: r[1]}))), phone = UI.dev === 'phone', cur = S.mroot == null ? (phone ? null : 0) : S.mroot;
+    const subs = i => `<div class="col"><a class="b" href="#hub" data-go="hub">${flat[i].n}</a><div class="msub">${flat[i].s.slice(0, 8).map(x => go('category', x)).join('')}</div><a class="sm" href="#hub" data-go="hub" data-name="${flat[i].n}">Усі в розділі ›</a></div>`;
+    if (phone && cur != null) return `<button class="btn l sm" data-mroot="back">‹ Усі розділи</button>${subs(cur)}`;
+    return `<h3>Каталог</h3><input id="m-s" class="btn l" style="font-weight:400;text-align:left" placeholder="Пошук у каталозі" aria-label="Пошук у каталозі"><div class="mega"><nav class="mroots" aria-label="Розділи">${TREE.map(g => `<b class="sm mut">${g.g}</b>${g.r.map(r => { const i = flat.findIndex(x => x.n === r[0]); return `<button class="${i === cur ? 'on' : ''}" data-mroot="${i}"><span>${r[0]}</span><span>›</span></button>`; }).join('')}`).join('')}</nav>${phone ? '' : `<div class="mright">${subs(cur)}<div class="row sm" style="margin-top:10px">${go('brand-front', 'FRONT')}${go('brand-tigor', 'TIGOR')}${go('kit', 'Підбірки товарів')}</div></div>`}</div><div class="row btw sm">${go('catalog', 'Усі розділи')}<button class="ic" style="height:28px" data-open="quote">Прорахувати список</button></div>`;
+  },
+  city: () => `<h3>Ваше місто</h3><p class="sm mut">Основний сайт працює на всю Україну. Для Харкова є окрема версія із самовивозом і нашою машиною.</p><button class="btn l w" data-region="ua">Уся Україна</button><button class="btn l w" data-region="kharkiv">Харків</button><p class="mut">Не перенаправляємо автоматично за геолокацією: вибір за вами й запам'ятовується.</p>`,
+  callback: () => `<h3>Замовити дзвінок</h3><label class="field">Телефон<input id="cb-t" inputmode="tel" value="+38 0"></label><label class="field">Що уточнити<select id="cb-g"><option>Ціна та наявність</option><option>Скільки матеріалу потрібно</option><option>Колерування</option><option>Доставка</option></select></label><label class="row sm"><input id="cb-m" type="checkbox"> Відповісти у Viber або Telegram</label><button class="btn p w" data-toast="Прототип: дзвінок не замовляється" data-close>Передзвоніть мені</button><p class="mut">Або напишіть: Viber · Telegram · WhatsApp</p>`,
+  oneclick: () => `<h3>Швидке замовлення</h3><p class="sm">Менеджер підтвердить наявність, спосіб отримання і вартість доставки.</p><label class="field">Телефон<input id="oc-t" inputmode="tel" value="+38 0"></label><label class="field">Кількість<input id="oc-q" inputmode="numeric" value="1"></label><button class="btn p w" ${DEMO ? 'data-oc' : 'data-go="success" data-close'}>Зарезервувати / порадитися</button><p class="mut">Телефон потрібен лише для зв'язку щодо цього замовлення.</p>`,
+  added: () => { const l = S.last ? S.last.e : S.cart[S.cart.length - 1], q = S.last ? S.last.qty : l.qty, p = PROD[l.id]; return `<h3>Додано до кошика</h3><div class="row btw sm"><span>${p.name}, ${p.packs[l.pack][0]}, ${q} шт.</span><b>${uah(p.packs[l.pack][2] * q)}</b></div><div class="sm">🏬 Самовивіз: сьогодні${X}</div><div class="sm">Вага замовлення: <b>${f1(cartWeight())} кг</b> · Разом: <b>${uah(cartSum())}</b></div><div class="col" ${DEMO && p.cat === 'x' ? 'hidden' : ''}><b class="sm">Для цієї роботи ще знадобиться</b>${[['tape', 'Стрічка малярська'], ['gs41', 'Штукатурка GS-41' + X]].map(([i, t]) => `<div class="row btw sm"><span>${t}</span><button class="btn l sm" data-add-q="${i}">Додати</button></div>`).join('')}</div><div class="mfoot"><div class="row" style="flex-wrap:nowrap"><button class="btn l w" data-close>Продовжити покупки</button><button class="btn p w" data-go="checkout" data-close>Оформити</button></div></div>`; },
+  quote: () => `<h3>Прорахувати список</h3><p class="sm">Надішліть перелік або кошторис, повернемо готовий кошик із цінами.</p><label class="field">Телефон або Viber<input id="q-t" inputmode="tel" value="+38 0"></label><label class="field">Список товарів<textarea id="q-l" rows="3"></textarea></label><label class="field">Файл (необов'язково)<input id="q-f" type="file"></label><button class="btn p w" data-toast="Прототип: заявка не надсилається" data-close>Надіслати</button>`,
+  notify: () => `<h3>Повідомити про надходження</h3><p class="sm">Напишемо, щойно товар з'явиться. Нічого більше не надсилаємо.</p><label class="field">Телефон або Viber<input id="n-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: не надсилається" data-close>Повідомити мене</button>`,
+  cheaper: () => `<h3>Знайшли дешевше?</h3><p class="sm">Надішліть посилання, перевіримо й повернемося з відповіддю.</p><label class="field">Посилання на товар<input id="ch-u"></label><label class="field">Телефон<input id="ch-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: не надсилається" data-close>Надіслати</button>`,
+  quick: () => { const p = PROD[S.quick || 'acr'], [l, , c] = p.packs[p.sel]; return `<h3>${p.name}</h3>${img('фото', '16/9')}<div class="row btw"><span class="mut">${l}</span><b class="price">${uah(c)}</b></div><div class="row" style="flex-wrap:nowrap"><button class="btn w" data-pdp="${S.quick || 'acr'}" data-go="pdp" data-close>Детальніше</button><button class="btn p w" data-add="${S.quick || 'acr'}">До кошика</button></div>`; },
+  subscribe: () => `<h3>Надіслати розрахунок у Viber?</h3><p class="sm">Пропонуємо лише після дії, що має цінність: калькулятор, підбір, порівняння.</p><label class="field">Телефон<input id="sb-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: нічого не надсилається" data-close>Надіслати</button>`,
+  cookie: () => `<h3>Файли cookie</h3><p class="sm">Потрібні cookie завжди ввімкнені. Аналітику й рекламу вмикаємо лише за вашою згодою.</p><div class="row" style="flex-wrap:nowrap"><button class="btn l w" data-close>Лише потрібні</button><button class="btn l w" data-close>Налаштувати</button><button class="btn w" data-close>Прийняти всі</button></div>`,
+};
+const TREE = [
+  {g: 'Будівництво', r: [
+    ['Сухі суміші, цемент, кладка', ['Клеї для плитки', 'Штукатурки', 'Шпаклівки', 'Ґрунтовки', 'Стяжки та вирівнювачі', 'Кладочні суміші', 'Декоративні штукатурки', 'Фасадні системи', 'Гідроізоляційні суміші', 'Вогнетривкі суміші']],
+    ['Гіпсокартонні системи', ['Гіпсокартон', 'Профіль', 'Підвіси', 'З’єднувачі', 'Стрічки']],
+    ['Утеплювачі та ізоляція', ['Пінопласт', 'XPS', 'Мінвата', 'Пароізоляція', 'Гідроізоляція', 'Сітка фасадна', 'Дюбель для утеплювача', 'Клей для утеплювача']],
+    ['Кріплення та метизи', ['Саморізи', 'Дюбеля', 'Анкера', 'Болти, гайки, шайби', 'Шурупи, гвинти', 'Цвяхи', 'Перфоровані кріплення', 'Такелаж']],
+  ]},
+  {g: 'Оздоблення', r: [
+    ['ЛФМ: фарби, ґрунтовки, лаки', ['Фарби інтер’єрні', 'Фасадні фарби', 'Емалі', 'Лаки', 'Антисептик', 'Розчинники', 'Монтажні піни', 'Герметики', 'Монтажні клеї']],
+    ['Двері, фурнітура', ['Міжкімнатні двері', 'Двері під фарбування', 'Вхідні двері', 'Ручки', 'Замки', 'Петлі', 'Упори та фіксатори', 'Монтажні матеріали']],
+  ]},
+  {g: 'Інженерія', r: [
+    ['Сантехніка', ['Труби', 'Фітинги', 'Крани', 'Змішувачі', 'Сифони', 'Гофри та шланги', 'Унітази та бачки', 'Душові аксесуари', 'Бойлери', 'Радіатори']],
+    ['Електрика', ['Кабель', 'Автоматика', 'Щити', 'Розетки та вимикачі', 'Лампи', 'Світильники', 'Гофра та кабель-канал', 'Клеми', 'Подовжувачі', 'Ізострічка та термоусадка']],
+  ]},
+  {g: 'Інструмент', r: [
+    ['Ручний інструмент', ['Вимірювальний', 'Малярний', 'Слюсарний', 'Будівельний', 'Ріжучий', 'Плитковий', 'Садово-господарський']],
+    ['Електроінструмент', ['Мережевий інструмент', 'Акумуляторний інструмент', 'Акумулятори та зарядні пристрої']],
+    ['Оснастка для інструменту', ['Диски', 'Свердла та бури', 'Біти та насадки']],
+  ]},
+  {g: 'Дім', r: [
+    ['Господарські товари', ['Стрем’янки', 'Драбини', 'Тачки', 'Відра та тази', 'Мішки', 'Плівка', 'Скотч', 'Рукавички', 'Окуляри та респіратори']],
+  ]},
+];
+const CATS = TREE.flatMap(g => g.r.map(([n, s]) => [n, s.join(' · ')]));
+const ALLN = TREE.flatMap(g => g.r.flatMap(([n, s]) => [n, ...s]));
+const isSec = n => CATS.some(c => c[0] === n);
+const secOf = n => isSec(n) ? n : (CATS.find(c => c[1].split(' · ').includes(n)) || [])[0];
+const idsIn = n => { const k = Object.keys(PROD), sub = k.filter(i => PROD[i].sub === n); return sub.length ? sub : k.filter(i => PROD[i].sec === secOf(n)); };
+const BRANDS = ['FRONT', 'TIGOR', 'Knauf'];
+const POPULAR = ['фарба біла', 'штукатурка', 'гіпсокартон', 'клей для плитки', 'FRONT', 'TIGOR'];
+const SYN = {краск: 'фарб', гипс: 'гіпс', шпатл: 'шпак', штукат: 'штукат', ротбанд: 'штукат', гкл: 'гіпсокартон', кабел: 'кабел', дрел: 'дрил', перчат: 'рукавич', ведро: 'відро'};
+const searchIds = q => { const w = String(q).toLowerCase().split(/\s+/).filter(x => x.length > 1).map(x => { const k = Object.keys(SYN).find(s => x.startsWith(s)); return k ? SYN[k] : x.slice(0, Math.max(3, x.length - 2)); }); return w.length ? Object.keys(PROD).filter(i => { const p = PROD[i], h = `${p.name} ${p.brand} ${p.sub} ${p.sec}`.toLowerCase(); return w.every(x => h.includes(x)); }) : []; };
+
+page({id: 'home', g: 'Основные', name: 'Главная', pr: 'Запуск', key: 1, url: '/  ·  /ru/',
+  seo: {t: 'Будівельні матеріали: інтернет-магазин IM BAU, ціни та доставка', h1: 'Будівельні матеріали: інтернет-магазин IM BAU', ld: 'Organization, OnlineStore, WebSite+SearchAction', idx: 'index. Основная версия без города: решение владельца от 01.11'},
+  view: () => site(
+    B(1, `<div class="hero3"><nav class="hcats" aria-label="Каталог">${TREE.flatMap(g => g.r).map(([n, s]) => `<div class="hc"><a class="hc-a" href="#hub" data-go="hub" data-name="${n}" aria-haspopup="true"><span>${n}</span><span>›</span></a><div class="hc-f"><a class="b" href="#hub" data-go="hub" data-name="${n}">${n}</a><div class="msub">${s.map(x => go('category', x)).join('')}</div><a class="sm" href="#hub" data-go="hub" data-name="${n}">Усі в розділі ›</a></div></div>`).join('')}</nav><a class="hbanner" href="#tinting" data-go="tinting">${img('Банер, що продає: власна тонувальна студія FRONT<br>кнопка «Купити фарбу»', '16/7')}</a><div class="hside"><a href="#promo" data-go="promo">${img('Акція місяця:<br>товар і ціна', '16/9')}</a><a href="#delivery" data-go="delivery">${img('Доставка<br>і самовивіз сьогодні', '16/9')}</a></div></div>`)
+    + B(2, `<div class="chips">${[['Самовивіз у ТЦ «Казка»', 'stores'], ['Наша машина по Харкову', 'delivery'], ['Нова пошта', 'delivery'], ['Колерування', 'tinting'], ['Підбір матеріалів', 'podbor'], ['єВідновлення', 'evid']].map(([t, c]) => `<a class="chip" href="#${c}" data-go="${c}">${t}</a>`).join('')}</div>`)
+    + B(3, `<h1 class="h1s">Будівельні матеріали: інтернет-магазин IM BAU</h1><div class="g6 catg" style="margin-top:8px">${CATS.map(c => `<a class="tile" href="#category" data-go="category">${img('фото', '16/9')}<span class="sm b">${c[0]}</span></a>`).join('')}</div>${go('catalog', 'Усі 12 розділів', 'catall sm')}`)
+    + B(4, `<div class="row btw"><div class="row" role="tablist">${[['Акції', 'promo'], ['Хіти продажів', 'hits'], ['Новинки', 'new']].map(([t, k]) => `<button class="chip ${(S.htab || 'promo') === k ? 'on' : ''}" role="tab" aria-selected="${(S.htab || 'promo') === k}" data-htab="${k}">${t}</button>`).join('')}</div>${go('promo', 'Усі акції')}</div><div class="g4" style="margin-top:8px">${({promo: ['acr', 'fac', 'gs41', 'tm12'], hits: ['tm12', 'gkl', 'mat', 'gs41'], new: ['ven', 'sat', 'tape', 'mat']})[S.htab || 'promo'].map(i => pcard(i)).join('')}</div>`)
+    + B(5, `<h2>Власні марки</h2><div class="g2" style="margin-top:8px">${[['FRONT', 'brand-front', ['Фарби інтер’єрні', 'Фасадні фарби', 'Малярні стрічки']], ['TIGOR', 'brand-tigor', ['Штукатурки', 'Клеї', 'Шпаклівки']]].map(([a, c, l]) => `<div class="tile" style="background:var(--s)"><a href="#${c}" data-go="${c}"><b style="font-size:20px">${a}</b></a><div class="chips">${l.map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div></div>`).join('')}</div>`)
+    + B(6, `<h2>Підбірки товарів</h2><div class="chips" style="margin-top:8px">${['Для фарбування', 'Для штукатурки', 'Для плитки', 'Для гіпсокартону', 'Для утеплення', 'Для стяжки'].map(t => `<a class="chip" href="#kit" data-go="kit">${t}</a>`).join('')}</div>`)
+    + B(7, `<div class="row btw"><h2>Виробники</h2>${go('brands', 'Усі виробники')}</div><div class="g6" style="margin-top:8px">${['Front', 'Tigor', 'Knauf'].map(t => `<a class="tile" href="#brands" data-go="brands">${img('логотип', '3/2')}<span class="sm">${t}</span></a>`).join('')}</div>`)
+    + B(8, `<div class="bx s row btw"><div><b>Магазин у Харкові</b><br><span class="sm">${STORE}<br>Пн-Сб 9:00-19:50, Нд 10:00-18:00</span></div><a class="btn" href="#stores" data-go="stores">Як доїхати</a></div>`)
+    + B(9, `<div class="row btw"><h2>Поради</h2>${go('blog', 'Усі статті')}</div><div class="g3" style="margin-top:8px">${['Як обрати фарбу', 'Скільки штукатурки купити', 'Який гіпсокартон обрати'].map(t => `<a class="tile" href="#blog" data-go="blog"><b class="sm">${t}${X}</b></a>`).join('')}</div>`)
+    + B(10, `<details class="sm"><summary class="b">Інтернет-магазин будматеріалів IM BAU</summary><p style="margin-top:5px;max-width:70ch">${DEMO ? 'IM BAU продає будівельні матеріали, власні марки FRONT і TIGOR, інструмент і товари для дому. Магазин у Харкові, доставка по Україні.' : 'Текст для пошуку внизу, згорнутий: асортимент, власні марки, доставка по Україні. Без назви міста на основній версії.'}</p></details>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'catalog', g: 'Каталог', name: 'Каталог: все разделы', pr: 'Запуск', key: 1, url: '/katalog',
+  seo: {t: 'Каталог будматеріалів: усі розділи | IM BAU', h1: 'Каталог товарів', ld: 'BreadcrumbList, ItemList', idx: 'index'},
+  view: () => site(crumbs(['Каталог']) + `<h1>Каталог товарів</h1>`
+    + B(1, `<div class="chips">${['Для стін', 'Для підлоги', 'Для стелі', 'Для фасаду', 'Для даху'].map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`)
+    + B(2, `<div class="g3">${CATS.map(c => `<div class="tile"><div class="row" style="flex-wrap:nowrap"><div style="width:52px;flex:none">${img('', '1/1')}</div><a href="#hub" data-go="hub" data-name="${c[0]}"><b class="sm">${c[0]}</b></a></div><div class="sm col" style="gap:2px">${c[1].split(' · ').slice(0, 5).map(s => `<a href="#category" data-go="category">${s}</a>`).join('')}<a href="#hub" data-go="hub" data-name="${c[0]}" class="mut">Усі категорії ›</a></div></div>`).join('')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+const F0 = () => ({pick: 0, av: 0, tint: 0, b: [], u: [], p: [], min: '', max: ''});
+S.f = F0();
+let LISTB = [];
+const PACKB = [['до 3 кг', w => w <= 3], ['3-10 кг', w => w > 3 && w <= 10], ['понад 10 кг', w => w > 10]];
+const fok = (id, skip) => { const p = PROD[id], f = S.f, [, w, c] = p.packs[p.sel], ok = (p.state || 'ok') === 'ok'; if ((f.pick || f.av) && !ok) return false; if (f.tint && !p.tint) return false; if (skip !== 'b' && f.b.length && !f.b.includes(p.brand)) return false; if (skip !== 'u' && f.u.length && !f.u.some(x => (p.use || []).includes(x))) return false; if (skip !== 'p' && f.p.length && !f.p.some(x => PACKB[x][1](w))) return false; if (f.min !== '' && c < +f.min) return false; if (f.max !== '' && c > +f.max) return false; return true; };
+const fcount = () => { const f = S.f; return f.pick + f.av + f.tint + f.b.length + f.u.length + f.p.length + (f.min !== '' ? 1 : 0) + (f.max !== '' ? 1 : 0); };
+const filters = () => { const base = LISTB, f = S.f, group = (h, k, vals) => { const rows = vals.map(([v, l, test]) => [v, l, base.filter(i => fok(i, k) && test(PROD[i])).length]).filter(r => r[2] || f[k].includes(r[0])); return rows.length ? `<div><b class="sm">${h}</b>${rows.map(([v, l, n]) => `<label class="row sm"><input id="f-${k}-${String(v).replace(/\W/g, '')}" type="checkbox" data-f="${k}" data-v="${v}" ${f[k].includes(v) ? 'checked' : ''}> ${l} (${n})</label>`).join('')}</div>` : ''; }, prices = base.map(i => PROD[i].packs[PROD[i].sel][2]);
+  return `<div class="col"><b>Фільтри</b><label class="row sm"><input id="f-pick" type="checkbox" data-f="pick" ${f.pick ? 'checked' : ''}> Забрати сьогодні</label><label class="row sm"><input id="f-av" type="checkbox" data-f="av" ${f.av ? 'checked' : ''}> У наявності в «Казка»${X}</label>${base.some(i => PROD[i].tint) ? `<label class="row sm"><input id="f-tint" type="checkbox" data-f="tint" ${f.tint ? 'checked' : ''}> Можна колерувати</label>` : ''}${group('Бренд', 'b', [...new Set(base.map(i => PROD[i].brand))].map(b => [b, b, p => p.brand === b]))}${group('Призначення', 'u', ['Для стін', 'Для стелі', 'Для фасаду', 'Для підлоги'].map(u => [u, u, p => (p.use || []).includes(u)]))}${group('Фасування', 'p', PACKB.map(([l, t], k) => [k, l, p => t(p.packs[p.sel][1])]))}<div class="g2" style="gap:6px;grid-template-columns:repeat(2,minmax(0,1fr))"><label class="field">Ціна від<input id="f-min" data-f="min" inputmode="numeric" value="${f.min}" placeholder="${prices.length ? Math.min(...prices) : ''}"></label><label class="field">до<input id="f-max" data-f="max" inputmode="numeric" value="${f.max}" placeholder="${prices.length ? Math.max(...prices) : ''}"></label></div></div>`; };
+const fchips = () => { const f = S.f, c = []; if (f.pick) c.push(['pick', '', 'Забрати сьогодні']); if (f.av) c.push(['av', '', 'У наявності']); if (f.tint) c.push(['tint', '', 'Колерування']); f.b.forEach(v => c.push(['b', v, v])); f.u.forEach(v => c.push(['u', v, v])); f.p.forEach(v => c.push(['p', v, PACKB[v][0]])); if (f.min !== '') c.push(['min', '', 'від ' + f.min + ' грн']); if (f.max !== '') c.push(['max', '', 'до ' + f.max + ' грн']); return c.length ? `<div class="chips">${c.map(([k, v, l]) => `<button class="chip on" data-frm="${k}" data-v="${v}">${l} ✕</button>`).join('')}<button class="chip" data-freset>Скинути</button></div>` : ''; };
+const shown = ids => { const rank = i => ({ok: 0, order: 1, out: 2})[PROD[i].state || 'ok'], pr = i => PROD[i].packs[PROD[i].sel][2], key = {asc: pr, desc: i => -pr(i), new: i => PROD[i].badge === 'Новинка' ? 0 : 1, promo: i => PROD[i].step ? 0 : 1}[S.sort] || (() => 0); return ids.filter(i => fok(i)).map((i, k) => [i, k]).sort((a, b) => rank(a[0]) - rank(b[0]) || key(a[0]) - key(b[0]) || a[1] - b[1]).map(x => x[0]); };
+const listing = ids => { LISTB = ids; const all = shown(ids), lim = 8 + S.more, n = fcount(); return `<div class="lay"><aside class="side col"><div class="col stick"><nav class="bx col sm" style="gap:3px" aria-label="Розділи каталогу"><b>Розділи</b>${CATS.slice(0, 7).map(c => go('hub', c[0])).join('')}${go('catalog', 'Усі розділи ›')}</nav><div class="bx">${filters()}</div></div></aside><div class="col" style="gap:12px"><div class="row mobfilter"><button class="btn l sm" data-open="filter">Фільтри${n ? ` (${n})` : ''}</button><button class="chip ${S.f.pick ? 'on' : ''}" data-fx="pick">🏬 Самовивіз сьогодні</button></div>${sortRow()}${fchips()}<div class="sm mut">Знайдено товарів: ${all.length}</div>${all.length ? `<div class="g4">${all.slice(0, lim).map(i => pcard(i)).join('')}</div>` : `<div class="bx s col"><b>Нічого не підійшло</b><span class="sm">Приберіть частину фільтрів.</span><button class="btn l" data-freset>Скинути фільтри</button></div>`}${all.length > lim ? `<div class="row" style="justify-content:center"><button class="btn l" data-more>Показати ще ${Math.min(8, all.length - lim)}</button></div>` : ''}</div></div>`; };
+MODALS.filter = () => `<div class="col sm" style="gap:3px"><b>Популярні підбірки</b>${['Для стін', 'Для стелі', 'Для фасаду'].map(t => `<a href="#landing" data-go="landing" data-close>${t}</a>`).join('')}</div>` + filters() + `<div class="mfoot"><span class="sm mut">Знайдено товарів: ${shown(LISTB).length}</span><div class="row" style="flex-wrap:nowrap"><button class="btn l w" data-freset>Скинути</button><button class="btn p w" data-close>Застосувати</button></div></div>`;
+
+page({id: 'search', g: 'Каталог', name: 'Поиск и результаты', pr: 'Запуск', key: 1, url: '/search?q=…',
+  seo: {t: 'Пошук: {запит}', h1: 'Результати для «{запит}»', ld: 'WebSite+SearchAction на главной', idx: 'noindex, follow'},
+  view: () => site(B(1, `<div class="seg" style="--line:var(--l)"><button aria-pressed="${!S.zero}" data-zero="0">Є результати</button><button aria-pressed="${!!S.zero}" data-zero="1">Нічого не знайдено</button></div>`)
+    + (S.zero ? B(2, `<h1>За запитом «ротбанд кнауп» нічого немає</h1><p class="sm">Можливо, ви мали на увазі: ${go('search', 'Rotband Knauf')}</p><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Ви дивились:</span>${['acr', 'fac'].map(i => `<a class="chip" href="#pdp" data-go="pdp" data-pdp="${i}">${PROD[i].name.slice(0, 24)}…</a>`).join('')}</div><div class="chips" style="margin-top:8px">${['Штукатурки', 'Шпаклівки', 'Ґрунтовки'].map(t => `<a class="chip" href="#category" data-go="category">${t}</a>`).join('')}</div><div class="g6" style="margin-top:10px">${CATS.slice(0, 6).map(c => `<a class="tile" href="#category" data-go="category"><span class="sm b">${c[0]}</span></a>`).join('')}</div><div class="bx s col" style="margin-top:10px"><b>Не знайшли товар?</b><span class="sm">Напишіть, що шукаєте. Перевіримо наявність або привеземо під замовлення.</span><label class="field">Телефон або Viber<input id="zero-t" value="+38 0"></label><button class="btn p" data-toast="Прототип: заявка не надсилається">Надіслати запит</button><span class="sm">+38 (098) 332-30-30</span></div>`)
+      : B(3, `<h1>Результати для «фарба front»</h1><div class="chips" style="margin-top:8px"><span class="sm mut" style="align-self:center">У розділах:</span>${['Фарби інтер’єрні (14)', 'Фасадні (6)', 'Емалі (2)'].map(t => `<a class="chip" href="#category" data-go="category">${t}</a>`).join('')}</div><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Часто шукають:</span>${['фарба для стелі', 'колерування', 'біла матова'].map(t => `<a class="chip" href="#search" data-go="search">${t}</a>`).join('')}</div>`) + B(4, listing(['acr', 'mat', 'fac', 'sat'])))),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'compare', g: 'Каталог', name: 'Сравнение и избранное', pr: 'Запуск', url: '/compare · /wishlist',
+  seo: {t: 'Порівняння товарів', h1: 'Порівняння', ld: '—', idx: 'noindex: оставить, в индекс не пускать (дорожная карта)'},
+  view: () => site(`<h1>Порівняння та обране</h1>` + B(1, `<div class="tscroll"><table class="tbl"><tr><th></th><th>Акрилова Front 7 кг</th><th>Маттлатекс Front 7 кг</th><th>Фасадна Front 7 кг</th></tr><tr><th>Ціна</th><td>628 грн</td><td>731 грн</td><td>790 грн</td></tr><tr><th>Ціна за кг</th><td>89,71 грн</td><td>104,43 грн</td><td>112,86 грн</td></tr><tr><th>Призначення</th><td>${ph('Стіни та стелі')}</td><td>${ph('Стіни, вологе прибирання')}</td><td>${ph('Фасади')}</td></tr><tr><th>Витрата</th><td>${ph('7 м²/кг')}</td><td>${ph('7 м²/кг')}</td><td>${ph('6 м²/кг')}</td></tr></table></div><div class="row" style="margin-top:8px"><button class="chip on" data-chip>Лише відмінності</button></div>`)
+    + B(2, `<div class="bx s sm"><b>Порожньо?</b> Додавайте товари значком ⇄ або ♡ у картці. ${go('catalog', 'Перейти до каталогу')}. Обране працює без входу.</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'promo', g: 'Информация', name: 'Акции', pr: 'Запуск', url: '/aktsii',
+  seo: {t: 'Акції на будматеріали | IM BAU', h1: 'Акції та знижки', ld: 'BreadcrumbList, ItemList', idx: 'index'},
+  view: () => site(crumbs(['Акції']) + `<h1>Акції та знижки</h1>` + B(1, `<div class="bx s sm">Акція FRONT діє <b>${ph('з 01.11 по 30.11')}</b>. Умови: ${ph('знижка на відро 7 кг, не сумується з промокодом')}</div>`)
+    + B(2, `<div class="chips">${['Усі', 'FRONT', 'TIGOR', 'Фарби', 'Суміші', 'Сезонне'].map((t, i) => `<button class="chip ${i ? '' : 'on'}" data-chip>${t}</button>`).join('')}</div>`) + B(3, `<div class="g4">${['acr', 'fac', 'gs41', 'tm12'].map(i => pcard(i)).join('')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'brands', g: 'Бренды', name: 'Все производители', pr: 'Запуск', url: '/brand',
+  seo: {t: 'Виробники будматеріалів | IM BAU', h1: 'Виробники', ld: 'BreadcrumbList', idx: 'index'},
+  view: () => site(crumbs(['Виробники']) + `<h1>Виробники</h1>` + B(1, `<div class="g2">${[['FRONT', 'Наша марка: фарби, ЛФМ, стрічки', 'brand-front'], ['TIGOR', 'Наша марка: суміші та системи', 'brand-tigor']].map(([a, b, c]) => `<a class="tile" style="background:var(--s)" href="#${c}" data-go="${c}"><b style="font-size:20px">${a}</b><span class="sm">${b}</span></a>`).join('')}</div>`)
+    + B(2, `<div class="chips">${['A-Z', 'А-Я'].concat(['F', 'K', 'T']).map(t => `<button class="chip" data-chip>${t}</button>`).join('')}</div><div class="g6" style="margin-top:8px"><a class="tile" href="#brand-other" data-go="brand-other">${img('логотип', '3/2')}<span class="sm b">Knauf</span></a>${['Бренд', 'Бренд', 'Бренд'].map(t => `<div class="tile">${img('логотип', '3/2')}<span class="sm mut">${t}${X}</span></div>`).join('')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+const COVER = {acr: 7, mat: 7, fac: 7, sat: 7, ven: 1, gs41: 1 / 9, tm12: 1 / 4}; // м² з 1 кг, приклад для демонстрації розрахунку
+const RATE = {acr: '7 м²/кг', mat: '7 м²/кг', fac: '7 м²/кг', sat: '7 м²/кг', ven: '1 м²/кг', gs41: '≈9 кг/м² при шарі 10 мм', tm12: '≈4 кг/м²'};
+const cartRows = () => S.cart.length ? S.cart.map((x, k) => { const p = PROD[x.id], [l, w, c] = p.packs[x.pack]; return `<div class="row btw bx" style="padding:8px;flex-wrap:nowrap"><div style="width:52px;flex:none">${img('', '1/1')}</div><div style="flex:1;min-width:0" class="sm"><b>${p.name}</b><div class="mut">${l} · ${f1(w * x.qty)} кг · 🏬 сьогодні${X}</div></div><div class="col" style="align-items:flex-end;gap:4px"><b>${uah(c * x.qty)}</b><span class="qty"><button data-cq="${k}" data-d="-1" aria-label="Менше">−</button><span style="padding:0 7px">${x.qty}</span><button data-cq="${k}" data-d="1" aria-label="Більше">+</button></span></div></div>`; }).join('') : `<div class="bx s col"><b>Кошик порожній</b><div class="g3">${CATS.slice(0, 6).map(c => `<a class="tile sm" href="#hub" data-go="hub">${c[0]}</a>`).join('')}</div>${go('catalog', 'Усі розділи', 'btn')}</div>`;
+const checkoutMethods = () => { const b = npBlock(), kh = S.city === 'Харків'; const r = (v, t, d, dis) => `<label class="radio ${dis ? 'dis' : ''}"><input id="m-${v}" type="radio" name="m" ${dis ? 'disabled' : ''} ${S.method === v && !dis ? 'checked' : ''} data-method="${v}"><span><b>${t}</b><br><span class="sm mut">${d}</span></span></label>`;
+  return (kh ? r('pick', 'Самовивіз із ТЦ «Казка»', `${STORE}. Безкоштовно. Готовність ${ph('30 хв')}`) + r('own', 'Наша доставка по Харкову', `Вартість ${ph('від 450 грн')} узгодимо до відправки`) : r('own', 'Наша доставка', `Лише Харків і ${ph('Харківська область')}`, 1)) + r('np', 'Нова пошта', b ? `Недоступно: ${b}` : 'За тарифами перевізника. Післяплата: передоплата 200 грн, комісія 2% + 20 грн', !!b) + (!kh && b ? `<div class="bx s sm">Цей кошик можна отримати лише в Харкові. <button type="button" class="ic" style="height:26px" data-region="kharkiv">Обрати Харків</button> або приберіть фарбу й важкі товари.</div>` : ''); };
+page({id: 'tracking', g: 'Покупка', name: 'Отслеживание заказа', pr: 'Запуск', url: '/zamovlennia/status',
+  seo: {t: 'Де моє замовлення?', h1: 'Де моє замовлення?', ld: '—', idx: 'форма index, страницы статуса noindex'},
+  view: () => site(`<h1>Де моє замовлення?</h1>` + B(1, `<div class="g2"><label class="field">Номер замовлення<input id="tr-n" value="12345"></label><label class="field">Телефон<input id="tr-t" value="+38 0"></label></div><button class="btn p" style="margin-top:8px" data-toast="Прототип: приклад статусу нижче">Перевірити</button>`) + B(2, `<div class="bx col"><div class="row btw"><b>Замовлення №12345</b><span class="ok">Передано водію</span></div><div class="bar"><i style="width:75%"></i></div><div class="sm mut">Прийнято → Збирається → Передано водію → Доставлено</div><div class="sm">Водій зателефонує за годину. Нова пошта: ТТН ${ph('20451000123456')}.</div></div>`) + B(3, `<div class="row"><button class="btn l" data-toast="Прототип: повтор замовлення">Повторити замовлення</button><button class="btn l" data-open="callback">Зв'язатися</button></div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'oneclick', g: 'Покупка', name: 'Купить в 1 клик', pr: 'Запуск', url: 'окно на карточке и в списке',
+  seo: {t: '—', h1: '—', ld: '—', idx: 'Не страница. Заказ попадает в контур с метками UTM'},
+  view: () => site(`<h1>Швидке замовлення</h1><p class="sm">Вікно відкривається в картці та в списку.</p>` + B(1, `<div class="bx col" style="max-width:420px">${MODALS.oneclick()}</div>`) + B(2, `<button class="btn" data-open="oneclick">Відкрити вікно</button>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'login', g: 'Кабинет', name: 'Вход и регистрация', pr: 'Запуск', url: '/login',
+  seo: {t: 'Вхід | IM BAU', h1: 'Вхід у кабінет', ld: '—', idx: 'noindex'},
+  view: () => site(`<h1>Вхід у кабінет</h1>` + B(1, `<div class="bx col" style="max-width:420px"><label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: SMS не надсилається">Отримати код</button><button class="btn l w" data-toast="Прототип: вхід не виконується">Увійти через Google</button><span class="mut">Новий клієнт? Після коду лише вкажіть ім'я. Пароль не потрібен.</span></div>`) + B(2, `<div class="sm mut">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account', g: 'Кабинет', name: 'Личный кабинет', pr: 'Запуск', url: '/account',
+  seo: {t: 'Кабінет', h1: 'Мій кабінет', ld: '—', idx: 'noindex'},
+  view: () => site(`<h1>Мій кабінет</h1>` + B(1, `<div class="bx col"><b>Останні замовлення</b>${['12345 · Передано водію · 698 грн', '12210 · Отримано · 1 548 грн' + X].map(t => `<div class="row btw sm"><span>${t}</span><button class="btn l sm" data-toast="Прототип: товари додано до кошика">Повторити</button></div>`).join('')}</div>`) + `<div class="g3">` + B(2, `<div class="bx col"><b>Адреси об'єктів</b><span class="sm">Квартира, Холодна Гора${X}</span><span class="sm">Дача, Мерефа${X}</span><button class="btn l sm" data-toast="Прототип">Додати об'єкт</button></div>`) + B(3, `<div class="bx col"><b>Мій асортимент</b><span class="sm">Товари, які купуєте регулярно</span>${go('compare', 'Обране та порівняння')}</div>`) + B(4, `<div class="bx col"><b>Знижки</b><span class="sm">${ph('Картка: 1% бонусами')}</span>${go('loyalty', 'Умови')}</div>`) + `</div>`),
+  notes: [],
+  market: [], avoid: []});
+
+
+const brandPage = (id, b, sub, lines_, prods, front) => page({id, g: 'Бренды', name: `Страница ${b}: наш бренд`, pr: 'Запуск', key: front ? 1 : 0, url: `/brand/${b.toLowerCase()}`,
+  seo: {t: `${b}: офіційний сайт продукції, ціни й техлисти | IM BAU`, h1: `${b}: ${sub}`, ld: 'Brand, Organization, BreadcrumbList, ItemList', idx: 'index. Описания первоисточника для всего рынка'},
+  view: () => site(crumbs([['brands', 'Виробники'], b]) + B(1, `<div class="g2"><div class="col" style="justify-content:center"><h1>${b}: ${sub}</h1><div class="row sm"><span>Рік: ${ph('2010')}</span><span>Країна: Україна ${ph('Україна')}</span></div><details class="sm"><summary>Читати далі</summary><p style="margin-top:4px">${ph('Власне виробництво в Україні, контроль кожної партії в лабораторії.')}</p></details><div class="row"><a class="btn p" href="#landing" data-go="landing">Усі товари ${b}</a>${front ? go('tinting', 'Колерування', 'btn') : go('calc', 'Порахувати витрату', 'btn')}</div></div>${img(front ? 'Банер: власна тонувальна студія' : 'Банер: системи та виробництво', '16/9')}</div>`)
+    + B(3, `<div class="row btw"><h2>Пріоритетні товари</h2>${go('landing', 'Усі')}</div><div class="g4" style="margin-top:8px">${prods.map(i => pcard(i)).join('')}</div>`)
+    + B(2, `<h2>Лінійки та системи</h2><div class="g4" style="margin-top:8px">${lines_.map(t => `<a class="tile" href="#landing" data-go="landing">${img('фото', '4/3')}<b class="sm">${t}</b></a>`).join('')}</div>`)
+    + B(4, `<div class="g2"><div class="bx col"><b>Документи</b><span class="sm">📄 Технічні листи, PDF</span><span class="sm">📄 Сертифікати, PDF</span><span class="sm">📄 Паспорти безпеки, PDF</span>${go('certs', 'Усі документи')}</div><div class="bx col"><b>Де купити</b><span class="sm">${STORE}</span><span class="sm mut">${ph('Склад, Харків')}</span>${go('stores', 'Магазин на карті')}</div></div>`)
+    + B(5, `<h2>Питання про ${b}</h2>${faq([[`Скільки коштує ${b}?`, 'Діапазон цін із каталогу, якщо немає цін-заглушок.'], ['Де подивитися витрату?', 'Посилання на техлисти й калькулятор.']])}`)),
+  notes: [],
+  market: [],
+  avoid: []});
+brandPage('brand-front', 'FRONT', 'фарби й лакофарбові матеріали', ['Інтер’єрні фарби', 'Фасадні фарби', 'Декоративні', 'Малярні стрічки'], ['acr', 'mat', 'fac', 'tape'], 1);
+brandPage('brand-tigor', 'TIGOR', 'сухі суміші та системи', ['Штукатурки', 'Клеї', 'Шпаклівки', 'Стяжки'], ['gs41', 'tm12', 'gs41', 'tm12'], 0);
+
+page({id: 'brand-other', g: 'Бренды', name: 'Страница другого производителя', pr: 'Запуск', url: '/brand/knauf',
+  seo: {t: 'Knauf: ціна, купити в IM BAU', h1: 'Knauf', ld: 'BreadcrumbList, ItemList', idx: 'index при спросе, иначе noindex'},
+  view: () => site(crumbs([['brands', 'Виробники'], 'Knauf']) + B(1, `<div class="row">${'<div style="width:90px">' + img('логотип', '3/2') + '</div>'}<div><h1>Knauf</h1><p class="sm mut">Коротко про бренд і що саме є в наявності.</p></div></div>`) + B(2, `<div class="chips">${['Гіпсокартон', 'Штукатурки', 'Шпаклівки'].map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`) + B(3, listing(['gkl', 'gs41', 'tm12', 'acr'])) + B(4, faq([['Яка ціна Knauf?', 'Діапазон із каталогу.'], ['Чи є в магазині?', 'Наявність по точці.'], ['Який термін доставки?', 'Посилання на умови.']]))),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'city-cat', g: 'Города', name: 'Харьков: раздел в папке', pr: 'Запуск (Харьков)', url: '/kharkiv/shtukaturky',
+  seo: {t: 'Штукатурка в Харкові: ціна, доставка, наявність | IM BAU', h1: 'Штукатурка в Харкові', ld: 'BreadcrumbList, ItemList', idx: 'index при спросе. Не размножать на города без доставки'},
+  view: () => site(crumbs(['Штукатурки']) + B(1, `<h1>Штукатурка в Харкові</h1><div class="row sm" style="margin-top:6px"><span class="ok">Є в магазині ТЦ «Казка»${X}</span><span>Самовивіз сьогодні</span><span>Доставка ${ph('від 450 грн')}</span></div>`) + B(2, listing(['gs41', 'tm12', 'gkl', 'ven'])) + B(3, `<h2>Ціни на штукатурку в Харкові, ${ph('листопад 2026')}</h2><div class="tscroll"><table class="tbl" style="margin-block:6px"><tr><th>Товар</th><th>Ціна</th><th>Наявність</th></tr><tr><td>GS-41 TIGOR 15 кг${X}</td><td>258 грн${X}</td><td>є${X}</td></tr><tr><td>Венеціанська Front 1,5 кг</td><td>174 грн</td><td>є${X}</td></tr></table></div><h2>Штукатурка з доставкою по Харкову</h2><p class="sm mut" style="max-width:70ch">Окремий текст: що беруть для місцевих умов, як підвезти мішки, скільки поміщається в машину. ${ph('Вказуємо, що беруть для місцевих умов.')}</p>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'tinting', g: 'Услуги', name: 'Колерование краски', pr: 'Запуск', key: 1, url: '/koleruvannia-farby',
+  seo: {t: 'Колерування фарби в Харкові: ціна, терміни | IM BAU', h1: 'Колерування фарби', ld: 'Service, BreadcrumbList', idx: 'index. Сейчас страница пустая, срочно'},
+  view: () => site(crumbs([['catalog', 'Послуги'], 'Колерування']) + B(1, `<div class="g2"><div class="col" style="justify-content:center"><h1>Колерування фарби</h1><p>Покажіть відтінок: фото, Pinterest або код кольору. Відтворимо у фарбі FRONT у власній тонувальній студії.</p><a class="btn p" href="#tint-form" data-scroll="tint-form">Підібрати колір</a></div>${img('Фото студії: машина, зразки', '16/9')}</div>`)
+    + B(2, `<div class="g3">${[['Ціна', ph('від 30 грн / уп.')], ['Термін', ph('15 хв у магазині')], ['Мінімальний обсяг', ph('від 1,5 кг')]].map(([a, b]) => `<div class="bx col"><span class="sm mut">${a}</span><b>${b}</b></div>`).join('')}</div>`)
+    + B(3, `<h2>Як це працює</h2><div class="g4" style="margin-top:8px">${['Надішліть фото або код', 'Підберемо базу й оттінок', 'Зробимо пробний зразок', 'Заколеруємо й видамо'].map((t, i) => `<div class="step"><b>${i + 1}</b><span>${t}</span></div>`).join('')}</div>`)
+    + B(4, `<h2>Які фарби колеруємо</h2><div class="g4" style="margin-top:8px">${['acr', 'mat', 'fac'].map(i => pcard(i, {noqty: 1})).join('')}<div class="bx sm mut">Палітри: ${ph('RAL, NCS')}. Кількість відтінків: одна цифра всюди.</div></div>`)
+    + B(5, `<form id="tint-form" class="bx s col" data-noform><b>Заявка на підбір</b><label class="field">Телефон або Viber<input id="ti-t" value="+38 0"></label><label class="field">Код кольору або посилання на Pinterest<input id="ti-c"></label><label class="field">Фото<input id="ti-f" type="file"></label><button type="button" class="btn p" data-toast="Прототип: заявка не надсилається">Надіслати</button></form>`)
+    + B(6, `<div class="bx sm"><b>Важливо:</b> колір на екрані відрізняється від нанесеного. Заколеровану фарбу ${ph('обміну не підлягає')}. ${go('returns', 'Умови повернення')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'evid', g: 'Услуги', name: 'єВідновлення', pr: 'Запуск', url: '/evidnovlennya',
+  seo: {t: 'Як використати кошти єВідновлення в IM BAU', h1: 'Купити матеріали за єВідновлення', ld: 'FAQ по желанию, BreadcrumbList', idx: 'index, UA и RU'},
+  view: () => site(crumbs(['єВідновлення']) + B(1, `<h1>Купити матеріали за єВідновлення</h1><p class="sm" style="max-width:70ch;margin-top:4px">Отримали компенсацію? В IM BAU можна придбати будматеріали для відновлення пошкодженого житла. Кошти потрібно використати протягом 12 місяців.</p>`)
+    + B(2, `<h2>Як купити</h2><div class="col" style="margin-top:6px">${['Оберіть товари в магазині або на сайті', 'Під час оформлення вкажіть оплату карткою «єВідновлення»', 'Оплатіть замовлення карткою програми', 'Отримайте товари й використовуйте для відновлення оселі'].map((t, i) => `<div class="step"><b>${i + 1}</b><span>${t}</span></div>`).join('')}</div>`)
+    + B(3, `<div class="g6">${['Суміші', 'Фарби', 'Гіпсокартон', 'Утеплювачі', 'Електрика', 'Сантехніка'].map(t => `<a class="tile" href="#category" data-go="category"><span class="sm b">${t}</span></a>`).join('')}</div><p class="sm mut" style="margin-top:6px">${ph('Перелік перевіряємо разом із вами.')}</p>`)
+    + B(4, `<div class="bx s col"><b>Порахуємо, що вкладеться в суму</b><label class="field">Телефон<input id="ev-t" value="+38 0"></label><label class="field">Що відновлюєте<input id="ev-w"></label><button class="btn p" data-toast="Прототип: заявка не надсилається">Підібрати комплект</button></div>`)
+    + B(5, faq([['Які документи потрібні?', `${ph('Картка програми й паспорт')}`], ['Чи можна з доставкою?', `${ph('Так, по Харкову')}`]]))),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'podbor', g: 'Услуги', name: 'Подбор материалов', pr: 'Запуск', key: 1, url: '/pidbir-materialiv',
+  seo: {t: 'Підбір будматеріалів: розрахунок і комплектація | IM BAU', h1: 'Підбір матеріалів', ld: 'Service, BreadcrumbList', idx: 'index'},
+  view: () => site(crumbs(['Підбір матеріалів']) + B(1, `<h1>Підбір матеріалів</h1><p class="sm" style="margin-top:4px">Надішліть список або кошторис. Порахуємо кількість і зберемо кошик із цінами.</p>`)
+    + `<div class="pdp">` + B(2, `<form class="bx col" data-noform><label class="field">Для чого матеріали<select id="pb-w"><option>Для штукатурки</option><option>Для фарбування</option><option>Для плитки</option><option>Для гіпсокартону</option><option>Інше</option></select></label><label class="field">Площа, м² (необов'язково)<input id="pb-a"></label><label class="field">Кошторис або фото (необов'язково)<input id="pb-f" type="file"></label><label class="field">Телефон або Viber<input id="pb-t" value="+38 0"></label><button type="button" class="btn p w" data-toast="Прототип: заявка не надсилається">Отримати список і ціну</button><span class="mut">Відповідь ${ph('за 2 години')}. Нічого не купуєте, поки не погодите список.</span></form>`)
+    + B(3, `<div class="col"><div class="step"><b>1</b><span>Опис або кошторис</span></div><div class="step"><b>2</b><span>Консультант рахує й пропонує варіанти</span></div><div class="step"><b>3</b><span>Посилання на готовий кошик</span></div><div class="bx s sm" style="margin-top:6px">Хочете самі? ${go('calc', 'Калькулятори')} · ${go('kit', 'Рішення під роботу')}<br>Або приїжджайте: ${STORE}</div></div>`) + `</div>`
+    + B(4, `<h2>Готові підбірки</h2><div class="chips" style="margin-top:6px">${['Для штукатурки', 'Для фарбування', 'Для плитки'].map(t => `<a class="chip" href="#kit" data-go="kit">${t}</a>`).join('')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'delivery', g: 'Информация', name: 'Оплата и доставка', pr: 'Запуск', key: 1, url: '/dostavka-ta-oplata',
+  seo: {t: 'Доставка й оплата будматеріалів | IM BAU', h1: 'Доставка та оплата', ld: 'В Product: shippingDetails; BreadcrumbList', idx: 'index'},
+  view: () => site(crumbs(['Доставка та оплата']) + `<h1>Доставка та оплата</h1><div class="chips"><a class="chip" href="#delivery" data-scroll="kharkiv">По Харкову</a><a class="chip" href="#delivery" data-scroll="np">Нова пошта</a><a class="chip" href="#delivery" data-scroll="pay">Оплата</a></div>` + B(1, `<div class="tscroll"><table class="tbl"><tr><th>Спосіб</th><th>Куди</th><th>Термін</th><th>Ціна</th><th>Обмеження</th></tr><tr><td>Самовивіз</td><td>ТЦ «Казка», Харків</td><td>${ph('сьогодні')}</td><td>Безкоштовно</td><td>—</td></tr><tr><td>Наша машина</td><td>Харків</td><td>${ph('завтра')}</td><td>${ph('від 450 грн')}</td><td>Вага, об'єм, довжина</td></tr><tr><td>Нова пошта</td><td>Україна</td><td>За перевізником</td><td>За перевізником</td><td class="no">Без ЛФМ та великогабариту понад 30 кг</td></tr></table></div>`)
+    + B(2, `<div class="sm alertbar">⚠ ${ph('Під час повітряної тривоги обробка замовлень і видача призупиняються')}</div><h2 id="kharkiv">Доставка по Харкову</h2><p class="sm" style="margin-block:5px">Вартість залежить від відстані, ваги й об'єму, довжини товару.</p><div class="tscroll"><table class="tbl"><tr><th>Машина</th><th>Вага</th><th>Об'єм</th><th>Довжина</th><th>Місто</th><th>Область, км</th></tr>${[['Мала', 'до 1,5 т', '6 м³', '3 м', '450-700 грн', '18 грн/км'], ['Середня', 'до 3 т', '16 м³', '4 м', '900-1 300 грн', '25 грн/км'], ['Велика', 'до 5 т', '24 м³', '6 м', '1 500-2 200 грн', '33 грн/км']].map(r => `<tr>${r.map((v, i) => `<td>${i ? v + X : v}</td>`).join('')}</tr>`).join('')}</table></div><p class="sm mut" style="margin-top:5px">Оновлено: ${ph('02.11.2026')}. Безоплатна доставка: ${ph('від 20 000 грн')}</p>`)
+    + B(3, `<div class="g2"><div class="bx col"><b>Підйом і занос</b><span class="sm">До ${ph('30 кг')} і ${ph('1 м')}: безоплатно до ${ph('5')} поверху. Вище: ${ph('2 грн/кг за поверх')}. Ліфт: ${ph('ліфт рахуємо як 1 поверх')}. Розвантаження до ${ph('10 м')} від машини.</span></div><div class="bx col"><b>Водій</b><span class="sm">Телефонує за ${ph('60 хв')}, чекає ${ph('15 хв')}. Дозаїзд: ${ph('300 грн')}</span></div></div>`)
+    + B(4, `<h2 id="np">Нова пошта</h2><ul class="sm" style="padding-left:18px;margin:5px 0"><li>Післяплата: передоплата 200 грн</li><li>Комісія за переказ: 2% + 20 грн</li><li>Лакофарбові матеріали й великогабарит понад 30 кг не відправляємо</li></ul>`)
+    + B(5, `<h2 id="pay">Оплата</h2><div class="g4" style="margin-top:6px">${['Онлайн на сайті', 'Карткою в магазині', 'Готівкою в магазині', 'За рахунком-фактурою'].map(t => `<div class="bx sm">${t}</div>`).join('')}</div><p class="sm" style="margin-top:6px">Картка ${go('evid', 'єВідновлення')} · Оплата частинами: ${ph('monobank, до 6 платежів')}</p>`)
+    + B(6, `<div class="bx s sm"><b>При отриманні:</b> перевірте комплектність і стан товару, звірте з видатковою накладною.</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+const simple = (id, g, name, pr, url, seo, body, notes, market, avoid) => page({id, g, name, pr, url, seo, view: () => site(body()), notes, market, avoid});
+simple('warranty', 'Информация', 'Гарантия', 'Запуск', '/garantiia', {t: 'Гарантія на товари | IM BAU', h1: 'Гарантія', ld: 'BreadcrumbList', idx: 'index'},
+  () => crumbs(['Гарантія']) + `<h1>Гарантія</h1>` + B(1, `<div class="g2"><div class="bx col"><b>Марки FRONT і TIGOR</b><span class="sm">Термін придатності, зберігання, ${ph('12 місяців')}</span></div><div class="bx col"><b>Інші товари</b><span class="sm">Гарантія виробника, електроінструмент: ${ph('талон і сервісний центр')}</span></div></div>`) + B(2, `<div class="col">${['Що потрібно: чек, фото, опис', 'Куди звернутися', 'Термін розгляду ' + ph('14 днів')].map((t, i) => `<div class="step"><b>${i + 1}</b><span>${t}</span></div>`).join('')}</div>`) + B(3, `<div class="bx s sm">Документи: ${go('certs', 'сертифікати та техлисти')}</div>`), [], [], []);
+simple('loyalty', 'Информация', 'Система скидок / лояльность', 'По решению', '/systema-znyzhok', {t: 'Система знижок | IM BAU', h1: 'Система знижок', ld: 'BreadcrumbList', idx: 'index, когда программа запущена'},
+  () => crumbs(['Система знижок']) + `<h1>Система знижок</h1>` + B(1, `<div class="g3"><div class="bx col"><b>Як накопичувати</b><span class="sm">${ph('1% з кожної покупки')}</span></div><div class="bx col"><b>Як витрачати</b><span class="sm">${ph('До 30% суми чека')}</span></div><div class="bx col"><b>Для майстрів</b><span class="sm">${ph('−3% за карткою майстра')}</span></div></div>`) + B(2, faq([['Чи діє в магазині?', ph('Так, картка діє і в магазині.')], ['Чи сумується з акціями?', ph('Ні, діє більша знижка.')]])), [], [], []);
+simple('about', 'Доверие', 'О компании', 'Запуск', '/pro-kompaniiu', {t: 'Про компанію IM BAU', h1: 'Про компанію IM BAU', ld: 'Organization', idx: 'index'},
+  () => crumbs(['Про компанію']) + B(1, `<h1>Про компанію IM BAU</h1><p style="max-width:70ch;margin-top:5px">Нове покоління магазину будматеріалів в Україні. Для тих, хто будує, ремонтує, облаштовує простір.</p>`) + B(2, `<div class="g4">${[['Для кого', 'Приватні клієнти, майстри, компанії'], ['Власні марки', 'FRONT і TIGOR'], ['Сервіс', 'Підбір, колерування, доставка'], ['Цінності', 'Український бізнес і виробники']].map(([a, b]) => `<div class="bx col"><b>${a}</b><span class="sm">${b}</span></div>`).join('')}</div>`) + B(3, `<div class="g3">${['Магазин', 'Команда: імена й ролі', 'Студія колерування'].map(t => img(t, '4/3')).join('')}</div>`) + B(4, `<div class="bx s row btw"><span class="sm">${ph('Працюємо з 2024 року, понад 5 000 товарів.')}</span>${go('stores', 'Завітати', 'btn')}</div>`), [], [], []);
+simple('reviews', 'Доверие', 'Отзывы', 'Запуск', '/vidguky', {t: 'Відгуки про магазин IM BAU', h1: 'Відгуки', ld: 'Только реальные; Review, AggregateRating при наличии', idx: 'index, когда есть отзывы'},
+  () => crumbs(['Відгуки']) + `<h1>Відгуки</h1>` + B(1, `<div class="chips">${['Усі', 'Магазин', 'Доставка', 'Колерування', 'Товари'].map((t, i) => `<button class="chip ${i ? '' : 'on'}" data-chip>${t}</button>`).join('')}</div>`) + B(2, `<div class="bx col"><div class="row btw"><b>Олена К.</b><span class="sm mut">${ph('28.10.2026')}</span></div><span class="sm">Купувала фарбу FRONT, підібрали відтінок за фото, забрала того ж дня.</span><span class="sm ok">Покупка підтверджена</span><div class="bx s sm">Відповідь IM BAU: дякуємо, раді бачити знову!</div></div>`) + B(3, `<div class="bx s sm">Купували в нас? Розкажіть про досвід. <button class="btn l sm" data-toast="Прототип: форма відгуку">Написати відгук</button></div>`), [], [], []);
+simple('certs', 'Доверие', 'Сертификаты и документы', 'Запуск', '/sertyfikaty', {t: 'Сертифікати й технічні документи | IM BAU', h1: 'Сертифікати та документи', ld: 'BreadcrumbList', idx: 'index'},
+  () => crumbs(['Сертифікати']) + `<h1>Сертифікати та документи</h1>` + B(1, `<div class="row"><input class="btn l" style="flex:1;font-weight:400;text-align:left" placeholder="Назва товару або артикул" aria-label="Пошук документа"><div class="chips"><button class="chip on" data-chip>FRONT</button><button class="chip" data-chip>TIGOR</button></div></div><div class="chips" style="margin-top:6px">${['Фарби ' + ph('12'), 'Сухі суміші ' + ph('9'), 'Гіпсокартон ' + ph('6'), 'Прайс-лист'].map(t => `<button class="chip" data-chip>${t}</button>`).join('')}</div>`) + B(2, `<div class="tscroll"><table class="tbl"><tr><th>Товар</th><th>Тип</th><th>Дійсний до</th><th>Файл</th></tr>${['Фарба акрилова Front', 'Фарба фасадна Front', 'GS-41 TIGOR' + X].map(t => `<tr><td>${t}</td><td>${ph('Сертифікат і техлист')}</td><td>${ph('31.12.2027')}</td><td>PDF, ${ph('1,2 МБ')}</td></tr>`).join('')}</table></div>`) + B(3, `<div class="bx s sm">Показуємо документи на товари, які є в продажу.</div>`), [], [], []);
+simple('faq', 'Доверие', 'FAQ', 'После запуска', '/faq', {t: 'Питання та відповіді | IM BAU', h1: 'Питання та відповіді', ld: 'FAQ только на контент для людей; актуальность разметки не проверяли', idx: 'index'},
+  () => crumbs(['FAQ']) + `<h1>Питання та відповіді</h1><input class="btn l" style="font-weight:400;text-align:left" placeholder="Пошук відповіді" aria-label="Пошук відповіді">` + B(1, `<div class="g3">${[['Замовлення', 'tracking'], ['Доставка', 'delivery'], ['Оплата', 'delivery'], ['Повернення', 'returns'], ['Товари й витрата', 'calc'], ['Колерування', 'tinting']].map(([a, c]) => `<a class="tile" href="#${c}" data-go="${c}"><b class="sm">${a}</b></a>`).join('')}</div>`) + B(2, faq([['Де моє замовлення?', 'Посилання на статус.'], ['Чому фарбу не можна Новою поштою?', 'Обмеження перевізника й варіанти.'], ['Скільки мішків потрібно на 20 м²?', 'Посилання на калькулятор.']])) + B(3, `<div class="bx s sm">Не знайшли відповідь? ${go('stores', 'Напишіть нам')}</div>`), [], [], []);
+simple('blog', 'Контент', 'Блог: список и статья', 'После запуска', '/porady', {t: 'Поради з ремонту та вибору матеріалів | IM BAU', h1: 'Поради', ld: 'Article, Person, BreadcrumbList', idx: 'index; один блог на сайт'},
+  () => crumbs(['Поради']) + `<h1>Поради</h1><input class="btn l" style="font-weight:400;text-align:left" placeholder="Пошук статті" aria-label="Пошук статті">` + B(1, `<div class="chips">${['Усі', 'ЛФМ', 'Сухі суміші', 'Гіпсокартон', 'Інструмент'].map((t, i) => `<button class="chip ${i ? '' : 'on'}" data-chip>${t}</button>`).join('')}</div>`) + B(2, `<div class="g3">${['Як підготувати стіни під фарбування', 'Скільки штукатурки потрібно', 'Як обрати фарбу для кухні'].map(t => `<article class="tile">${img('обкладинка', '16/9')}<b class="sm">${t}${X}</b><span class="mut" style="font-size:12px">${go('author', 'Автор')} · ${ph('15.10.2026')}</span></article>`).join('')}</div>`) + B(3, `<h2>Вигляд статті</h2><div class="pdp" style="margin-top:8px"><div class="col"><h3>Як підготувати стіни під фарбування${X}</h3><span class="sm mut">Автор, дата перевірки</span><div class="bx s sm">Зміст: 1. Що знадобиться · 2. Кроки · 3. Помилки</div>${lines(4)}</div><div class="bx col"><b>Що знадобиться</b><span class="sm">Ґрунтовка${X}, шпаклівка${X}, фарба Front</span><button class="btn p sm" data-toast="Прототип: додано до кошика">Додати список у кошик</button>${go('calc', 'Порахувати')}</div></div>`), [], [], []);
+simple('author', 'Контент', 'Страница автора', 'После запуска', '/porady/avtor/…', {t: '{Ім’я}: автор порад IM BAU', h1: '{Ім’я}', ld: 'Person', idx: 'index'},
+  () => crumbs([['blog', 'Поради'], 'Автор']) + B(1, `<div class="row" style="flex-wrap:nowrap"><div style="width:96px;flex:none">${img('фото', '1/1')}</div><div><h1>${ph('Олена Коваль')}</h1><span class="sm">${ph('Технолог, 12 років досвіду')}</span></div></div>`) + B(2, `<div class="chips"><span class="chip">Фарбування</span><span class="chip">Сухі суміші</span></div>`) + B(3, `<div class="g3">${['Стаття', 'Стаття', 'Стаття'].map(t => `<div class="tile"><b class="sm">${t}${X}</b><span class="mut" style="font-size:12px">${ph('15.10.2026')}</span></div>`).join('')}</div>`), [], [], []);
+simple('video', 'Контент', 'Видео', 'После запуска', '/video', {t: 'Відео: огляди й технологія робіт | IM BAU', h1: 'Відео', ld: 'VideoObject', idx: 'index при реальных роликах'},
+  () => crumbs(['Відео']) + `<h1>Відео</h1>` + B(1, `<div class="chips">${['Колерування', 'FRONT', 'TIGOR', 'Як нанести'].map(t => `<button class="chip" data-chip>${t}</button>`).join('')}</div>`) + B(2, `<div class="g3">${['Як колерується фарба', 'Нанесення штукатурки', 'Огляд магазину'].map(t => `<div class="tile">${img('ролик відкривається за кліком', '9/16')}<b class="sm">${t}${X}</b></div>`).join('')}</div>`) + B(3, `<div class="bx s sm">Ролики TikTok @imbau_shop і Instagram @imbau_shop.</div>`), [], [], []);
+simple('privacy', 'Юридические', 'Политика конфиденциальности', 'Запуск', '/polityka-konfidentsiinosti', {t: 'Політика конфіденційності | IM BAU', h1: 'Політика конфіденційності', ld: '—', idx: 'index'},
+  () => crumbs(['Конфіденційність']) + `<h1>Політика конфіденційності</h1>` + B(1, `<div class="bx s sm">Коротко: які дані збираємо, навіщо, як видалити. ${ph('Дані потрібні лише для замовлень і доставки, видалимо на запит.')}</div>`) + B(2, `<div class="col sm">${['Які дані збираємо', 'Навіщо', 'Cookies та реклама', 'Розсилки й мессенджери', 'Ваші права'].map((t, i) => `<a href="#privacy">${i + 1}. ${t}</a>`).join('')}</div>${lines(4)}`) + B(3, `<div class="sm mut">Оновлено: ${ph('02.11.2026')}.</div>`), [], [], []);
+simple('offer', 'Юридические', 'Публичная оферта', 'Запуск', '/publichna-oferta', {t: 'Публічна оферта | IM BAU', h1: 'Договір публічної оферти', ld: 'Связь с MerchantReturnPolicy', idx: 'index'},
+  () => crumbs(['Оферта']) + `<h1>Договір публічної оферти</h1>` + B(1, `<div class="col sm">${['Предмет', 'Ціна й оплата', 'Доставка', 'Повернення', 'Реквізити'].map((t, i) => `<a href="#offer">${i + 1}. ${t}</a>`).join('')}</div>${lines(4)}`) + B(2, `<div class="sm mut">Редакція від ${ph('02.11.2026')}.</div>`), [], [], []);
+simple('errors', 'Служебные', '404 и 505', 'Запуск', 'любой неверный адрес', {t: 'Сторінку не знайдено', h1: 'Такої сторінки немає', ld: '—', idx: 'Настоящий код 404. Снятый товар: аналоги или 301 на раздел'},
+  () => B(1, `<h1>Такої сторінки немає</h1><p class="sm" style="margin-top:4px">Спробуйте пошук або оберіть розділ.</p><input class="btn l" style="width:100%;font-weight:400;text-align:left;margin-top:8px" placeholder="Назва, бренд або артикул" aria-label="Пошук">`) + B(2, `<div class="g6">${CATS.slice(0, 6).map(c => `<a class="tile" href="#category" data-go="category"><span class="sm b">${c[0]}</span></a>`).join('')}</div>`) + B(3, `<div class="bx s sm">Телефон +38 (098) 332-30-30 · Viber · Telegram · ${go('stores', 'Магазин')} · <button class="ic" style="height:26px" data-toast="Прототип: повідомлення не надсилається">Повідомити про помилку</button></div>`) + B(4, `<div class="bx col"><b>Тимчасова технічна проблема</b><span class="sm">Спробуйте за кілька хвилин або зателефонуйте нам.</span></div>`), [], [], []);
+simple('popups', 'Служебные', 'Поп-апы', 'Запуск', 'поверх страниц', {t: '—', h1: '—', ld: '—', idx: 'Не страницы. Не закрывают контент при входе'},
+  () => `<h1>Спливаючі вікна</h1><p class="sm">Натисніть, щоб побачити кожне.</p>` + B(1, `<div class="row">${[['city', 'Вибір міста'], ['callback', 'Дзвінок'], ['quote', 'Прорахувати список'], ['oneclick', '1 клік'], ['added', 'Після «Купити»'], ['notify', 'Про надходження'], ['cheaper', 'Знайшли дешевше'], ['quick', 'Швидкий перегляд'], ['subscribe', 'Підписка'], ['cookie', 'Cookies']].map(([k, t]) => `<button class="btn" data-open="${k}">${t}</button>`).join('')}</div>`) + B(2, `<div class="bx s sm"><b>Правило:</b> на вході показуємо лише компактну смугу cookies. Місто запитуємо один раз у невеликій плашці, без переадресації. Підписка лише після дії з користю.</div>`), [], [], []);
+simple('sitemap', 'Служебные', 'HTML-карта сайта', 'Запуск', '/karta-saitu', {t: 'Карта сайту | IM BAU', h1: 'Карта сайту', ld: 'BreadcrumbList', idx: 'index, follow'},
+  () => crumbs(['Карта сайту']) + `<h1>Карта сайту</h1>` + B(1, `<div class="g3">${[['Каталог', CATS.slice(0, 5).map(c => c[0])], ['Бренди', ['FRONT', 'TIGOR', 'Knauf']], ['Міста', ['Харків']], ['Послуги', ['Колерування', 'Підбір матеріалів', 'єВідновлення', 'Калькулятори']], ['Покупцям', ['Доставка', 'Повернення', 'Гарантія', 'FAQ']], ['Компанія', ['Про нас', 'Магазин', 'Відгуки', 'Сертифікати', 'Поради']]].map(([h, a]) => `<div><b class="sm">${h}</b><ul class="sm" style="padding-left:16px;margin:4px 0">${a.map(t => `<li>${t}</li>`).join('')}</ul></div>`).join('')}</div>`), [], [], []);
+
+const cover = id => RATE[id] ? RATE[id] + X : '';
+const sortRow = () => `<div class="chips sortrow"><span class="sm mut" style="align-self:center">Сортування:</span>${[['rec', 'Рекомендовані'], ['asc', 'Дешевші'], ['desc', 'Дорожчі'], ['promo', 'Акції'], ['new', 'Новинки']].map(([k, t]) => `<button class="chip ${S.sort === k ? 'on' : ''}" data-sort="${k}">${t}</button>`).join('')}<button class="chip ${S.f.pick ? 'on' : ''}" data-fx="pick">🏬 Самовивіз сьогодні</button></div>`;
+const subStrip = a => `<div class="chips strip">${a.map(t => `<a class="chipi" href="#landing" data-go="landing"><span class="dot"></span>${t}</a>`).join('')}</div>`;
+const logoStrip = () => `<div class="chips logos">${['Front', 'Tigor', 'Knauf'].map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`;
+
+page({id: 'category', g: 'Каталог', name: 'Категория и подкатегория', pr: 'Запуск', key: 1, url: '/farby-interierni',
+  seo: {t: 'Фарби інтер’єрні: ціна, купити з доставкою | IM BAU', h1: 'Фарби інтер’єрні', ld: 'BreadcrumbList, ItemList, Product+AggregateOffer при реальных данных', idx: 'index; ?page=n свой URL; сортировки закрыты; пустой раздел не показываем'},
+  view: () => site(crumbs([['catalog', 'Каталог'], ['category', 'ЛФМ'], 'Фарби інтер’єрні']) + `<h1>Фарби інтер’єрні</h1>`
+    + B(1, subStrip(['Для стін', 'Для стелі', 'Матові', 'Шовковисто-матові', 'Для вологих приміщень', 'Для дитячої']) + logoStrip())
+    + B(2, listing(['acr', 'mat', 'sat', 'fac', 'ven', 'gs41', 'lor', 'gre']))
+    + B(3, `<div class="bx s sm"><b>Не знаєте, скільки купити?</b> Вкажіть площу в картці товару або в ${go('calc', 'калькуляторі')}. Великий список? ${`<button class="ic" style="height:26px" data-open="quote">Прорахувати список</button>`}</div>`)
+    + B(4, `<h2>Фарби інтер’єрні: як обрати</h2><p class="sm mut" style="max-width:70ch;margin-top:4px">Короткий вступ тут, а не над товарами: у жодного з шести конкурентів великого тексту над списком немає.</p>${lines(4)}<div class="bx sm" style="margin-top:8px">У розділі <b>18 товарів</b>${X}, від <b>145 грн</b> до <b>790 грн</b></div>${faq([['Яка фарба підійде для кухні?', 'Відповідь із реальних запитань покупців.'], ['Чи можна заколерувати?', 'Посилання на сторінку колерування.']])}`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'landing', g: 'Каталог', name: 'Посадочная фильтра', pr: 'Запуск', key: 1, url: '/shtukaturky/tigor',
+  seo: {t: 'Штукатурка TIGOR: ціна, купити | IM BAU. Description: «Ціна від X грн, у наявності N шт.»', h1: 'Штукатурка TIGOR', ld: 'BreadcrumbList, ItemList', idx: 'index только по белому списку, максимум 2 значения, порядок сегментов один. Остальное noindex. Меньше порога товаров: не создаём'},
+  view: () => site(crumbs([['category', 'Сухі суміші'], ['category', 'Штукатурки'], 'TIGOR'])
+    + B(1, `<h1>Штукатурка TIGOR</h1><p class="sm" style="margin-top:4px;max-width:70ch">До двох рядків: для яких основ і яка витрата. Основний текст під товарами.</p>`)
+    + B(2, `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#category" data-go="category">Бренд: TIGOR ✕</a></div><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Популярні підбірки:</span>${['Гіпсові', 'Цементні', 'Для фасаду', 'Машинне нанесення'].map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`)
+    + B(3, listing(['gs41', 'tm12', 'gkl', 'lor']))
+    + B(4, `<h2>Штукатурка TIGOR: що обрати</h2>${lines(3)}<div class="bx sm" style="margin-top:6px">У підбірці <b>9 товарів</b>${X}, від <b>258 грн</b>${X}</div>${faq([['Яка витрата на м²?', 'Дані з техлиста з посиланням на калькулятор.'], ['Чи є в магазині в Харкові?', 'Наявність по точці, посилання на сторінку магазину.']])}`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'pdp', g: 'Каталог', name: 'Карточка товара', pr: 'Запуск', key: 1, url: '/farba-akrylova-interierna-front',
+  seo: {t: 'Фарба акрилова інтер’єрна Front: ціна від 145 грн | IM BAU', h1: 'Название товара с фасовкой', ld: 'Product, Offer с доставкой и возвратом, BreadcrumbList. AggregateRating только при реальных отзывах', idx: 'index; canonical на себя; адрес без категории и без города: одна карточка на все города (решение владельца). Город меняет только наличие и получение. Снятый товар: аналоги или 301'},
+  view: () => { const id = S.pdp, p = PROD[id], i = p.sel, [lab, w, c] = p.packs[i], heavy = p.cat === 'lfm' || w > 30 || p.cat === 'sheet', st = DEMO ? (p.state || 'ok') : S.pstate || 'ok', mt = !DEMO || p.cat !== 'x', tabs = ['Опис', 'Характеристики', 'Витрата', 'Документи', 'Відгуки', 'Питання'];
+    if (DEMO) { S.seen = [id, ...S.seen.filter(x => x !== id)].slice(0, 6); }
+    return site((DEMO ? '' : `<div class="row"><div class="seg" style="--line:var(--l)">${[['acr', 'Фарба (реальна)'], ['gs41', 'Суміш' + X], ['gkl', 'Лист ГКЛ' + X]].map(([k, t]) => `<button aria-pressed="${id === k}" data-pdpset="${k}">${t}</button>`).join('')}</div><div class="seg" style="--line:var(--l)">${[['ok', 'В наявності'], ['order', 'Під замовлення'], ['out', 'Немає']].map(([k, t]) => `<button aria-pressed="${st === k}" data-pstate="${k}">${t}</button>`).join('')}</div></div>`)
+      + crumbs(DEMO ? [['catalog', 'Каталог'], ['hub', p.sec], ['category', p.sub], p.name] : [['category', p.cat === 'lfm' ? 'ЛФМ' : p.cat === 'sheet' ? 'Гіпсокартонні системи' : 'Сухі суміші'], p.name])
+      + `<div class="col" style="gap:6px"><h1 style="font-size:22px">${p.name}${p.real ? '' : X}, ${lab}</h1><div class="row sm mut"><span>Артикул ${id === 'acr' ? ph('133980') : '—'}</span>${go(p.brand === 'FRONT' ? 'brand-front' : p.brand === 'TIGOR' ? 'brand-tigor' : 'brand-other', p.brand)}<button class="ic ${S.fav.includes(id) ? 'on' : ''}" style="height:26px" aria-pressed="${S.fav.includes(id)}" aria-label="В обране" data-fav="${id}">${S.fav.includes(id) ? '♥' : '♡'}</button><button class="ic ${S.cmp.includes(id) ? 'on' : ''}" style="height:26px" aria-pressed="${S.cmp.includes(id)}" aria-label="Порівняти" data-cmp="${id}">⇄</button></div></div>`
+      + B(1, `<nav class="anch" aria-label="Розділи картки"><div class="chips">${tabs.map((t, k) => `<button class="chip" data-anchor="${k}">${t}</button>`).join('')}</div>${st === 'out' ? '' : `<span class="anch-buy"><b>${uah(c)}</b><button class="btn p sm" data-add="${id}">До кошика</button></span>`}</nav>`)
+      + `<div class="pdp"><div class="col">${B(2, `${img('Фото: упаковка, етикетка, нанесення', '4/3')}<div style="display:grid;gap:6px;margin-top:6px;grid-template-columns:repeat(4,minmax(0,1fr))">${['фото', 'етикетка', 'робота', 'відео'].map(t => img(t, '1/1')).join('')}</div>`)}</div>
+      <div class="col" style="gap:12px">
+        ${B(3, `<div class="bx col"><div class="row btw"><span class="${st === 'ok' ? 'ok' : st === 'order' ? 'b sm' : 'no'}">${st === 'ok' ? `В наявності: ${p.stock} шт.` + X : st === 'order' ? `Під замовлення: ${ph('3-5 днів')}` : 'Немає в наявності'}</span><span class="sm mut">${w} кг${p.vol ? ' · ' + p.vol + ' м³' : ''}${p.real ? '' : X}</span></div>
+          <div class="row" style="align-items:baseline"><span class="price xl" id="pd-price" ${st === 'out' ? 'style="color:var(--m)"' : ''}>${uah(c)}</span><span class="mut">/ ${p.cat === 'sheet' ? 'лист' : p.unit === 'шт' ? 'шт' : 'уп.'}</span><b class="sm" id="pd-unit">${unitPrice(p, i)}</b></div>
+          ${p.step ? `<div class="sm">Від ${p.step[0]} шт.: <b>${uah(p.step[1])}</b>${X}</div>` : ''}
+          ${p.minq ? `<div class="sm">Замовлення від: <b>${p.minq}</b>${X}</div>` : ''}
+          ${p.packs.length > 1 ? `<div class="row"><span class="sm">Фасування:</span>${p.packs.map((x, k) => `<button class="chip ${k === i ? 'on' : ''}" data-pack="${k}">${x[0]}</button>`).join('')}</div>` : ''}
+          ${st === 'out' ? `<button class="btn p w" data-open="notify">Повідомити про надходження</button><span class="sm">Є в інших магазинах: ${ph('склад у Харкові')} · ${go('category', 'Подивитися схожі товари')}</span>` : `<div class="row">${qtyCtl('pd', 1)}<button class="btn p" style="flex:1" data-add="${id}">До кошика</button></div><div class="sm" id="pd-sum">Разом: <b>${uah(c)}</b> · ${f1(w)} кг</div><button class="btn w" data-open="oneclick" data-pid="${id}">Зарезервувати / порадитися</button><button class="ic" style="height:28px" data-open="quote">Запитати ціну на обсяг</button>`}
+          <div class="row sm"><button class="ic" style="height:26px" data-open="cheaper">Знайшли дешевше?</button>${p.tint ? go('tinting', '🎨 Заколерувати') : ''}</div>
+          ${RATE[id] || p.cat === 'sheet' ? `<div class="bx s col"><label class="field"><b>Скільки потрібно на вашу площу?</b><span class="row" style="flex-wrap:nowrap"><input id="pd-area" inputmode="decimal" value="40" aria-label="Площа, м²"><span>м²</span></span></label><div class="sm" id="pd-res"></div></div>` : ''}</div>`)}
+        ${B(4, `<div class="col sm"><div class="sm alertbar">⚠ ${ph('Під час повітряної тривоги обробка замовлень і видача призупиняються')}</div><div class="row btw" style="flex-wrap:nowrap"><span>🏬 ${S.region === 'kharkiv' ? 'Самовивіз ТЦ «Казка»' : 'Самовивіз у Харкові'}: <b>${st === 'ok' ? `сьогодні${X}` : ph('за 3-5 днів')}</b></span><b>0 грн</b></div><div class="row btw" style="flex-wrap:nowrap"><span>🚚 Наша машина по Харкову</span><b>${ph('від 450 грн')}</b></div>${heavy ? `<div class="no">📦 Новою поштою не відправляємо: ${p.cat === 'lfm' ? 'ЛФМ перевізник не приймає' : 'вага понад 30 кг'}</div>` : `<div class="row btw"><span>📦 Нова пошта</span><span>за тарифами перевізника</span></div>`}<details><summary class="mut">Наявність по точках</summary><p class="mut" style="padding-top:4px">ТЦ «Казка»: ${p.stock || 0} шт.${X}<br>Склад у Харкові: 120 шт.${X}</p></details><details><summary class="mut">Умови отримання й оплати</summary><p class="mut" style="padding-top:4px">Вартість машини залежить від відстані, ваги й довжини. Резерв ${ph('на 3 дні')}. Оплата: онлайн, карткою, готівкою, рахунок, ${go('evid', 'єВідновлення')}. ${go('delivery', 'Тарифи')} · ${go('returns', 'Повернення')}</p></details></div>`)}
+        ${!mt ? B(5, `<table class="tbl sm"><tr><th>Бренд</th><td>${p.brand}</td></tr><tr><th>Вага</th><td>${w} кг</td></tr></table>`) : B(5, `<table class="tbl sm"><tr><th>Витрата</th><td>${cover(id) || '—'}</td></tr><tr><th>Для чого</th><td>${ph('стіни та стелі в приміщенні')}</td></tr><tr><th>Основа</th><td>${ph('акрилова дисперсія')}</td></tr><tr><th>Висихання</th><td>${ph('2-4 години')}</td></tr>${p.cat === 'mix' ? `<tr><th>Час життя розчину</th><td>${ph('60 хв')}</td></tr><tr><th>Вода на мішок</th><td>${ph('9 л на мішок')}</td></tr>` : ''}</table>`)}
+      </div></div>`
+      + B(6, `<div id="pd-tabs" class="tabsw" role="tablist">${tabs.map((t, k) => `<button role="tab" aria-selected="${k === S.tab}" data-tab="${k}">${t}</button>`).join('')}</div><div style="padding-top:10px" class="sm">${[
+        !mt ? 'Опис товару від виробника.' : `<b>Для чого:</b> ${ph('внутрішні стіни та стелі')}. <b>Де не застосовувати:</b> ${ph('вологі зони без ґрунтування')}. ${DEMO ? '' : 'Без шаблонного тексту та оферти у вкладці.'}`,
+        `<table class="tbl"><tr><th>Вага нетто</th><td>${lab}</td></tr><tr><th>Бренд</th><td>${p.brand}</td></tr>${mt ? `<tr><th>Основа</th><td>${ph('акрилова дисперсія')}</td></tr>` : ''}</table>`,
+        `<table class="tbl"><tr><th>Витрата</th><td>${cover(id) || '—'}</td></tr><tr><th>Шарів</th><td>${ph('2 шари')}</td></tr><tr><th>Підготовка</th><td>${ph('поверхня чиста, суха, заґрунтована')}</td></tr></table>${DEMO ? '' : '<p class="mut" style="margin-top:6px">Витрата показана як приклад. Брати лише з техлиста виробника.</p>'}`,
+        `<div class="col"><span>📄 Технічний лист, PDF, ${ph('1,2 МБ')}</span><span>📄 Сертифікат, PDF, ${ph('800 КБ')}</span>${DEMO ? '' : '<span class="mut">Лише те, що можемо підтвердити документом.</span>'}</div>`,
+        `<p class="mut">${DEMO ? 'Відгуків ще немає. Будьте першим.' : 'Поки відгуків немає, лічильник приховано. Форма: оцінка, досвід використання, площа й основа, переваги, недоліки. На відгуках покупців мітка «Покупка підтверджена».'}</p><button class="btn l sm" data-toast="Прототип: форма відгуку">Написати перший відгук</button>`,
+        faq([['Скільки шарів наносити?', 'Відповідь технолога.'], ['Чи можна на гіпсокартон?', 'Відповідь із посиланням на ґрунтовку.']]) + '<button class="btn l sm" style="margin-top:6px" data-toast="Прототип: форма питання">Поставити питання</button>'][S.tab]}</div>`)
+      + B(7, `<h2>${mt ? 'Куплять разом' : 'Схожі товари'}</h2><div class="row bx" ${mt ? '' : 'hidden'} style="margin-top:8px"><span class="sm" style="flex:1;min-width:180px">${p.name.slice(0, 34)}… + Стрічка малярська Front</span><b>${uah(c + 35)}</b><button class="btn p sm" data-addpair="${id}">Купити разом</button></div><div class="g4" style="margin-top:8px">${(mt ? ['tape', 'gs41', 'tm12', 'ven'] : idsIn(p.sec)).filter(x => x !== id).slice(0, 4).map(x => pcard(x, {noqty: 1})).join('')}</div>`)
+      + ((DEMO && S.seen.length < 2) ? '' : B(8, `<h2>Ви дивились</h2><div class="chips" style="margin-top:6px">${(DEMO ? S.seen.filter(x => x !== id) : ['mat', 'fac', 'sat']).map(x => `<a class="chip" href="#pdp" data-go="pdp" data-pdp="${x}">${PROD[x].name.slice(0, 26)}… ${uah(PROD[x].packs[PROD[x].sel][2])}</a>`).join('')}</div>`)),
+      st === 'out' ? '' : `<div class="sticky-buy"><div><b>${uah(c)}</b><br><span class="mut">${lab}</span></div><button class="btn p" data-add="${id}">До кошика</button></div>`); },
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'kit', g: 'Каталог', name: 'Комплект / решение под работу', pr: 'После запуска', url: '/rishennia/dlia-shtukaturky',
+  seo: {t: 'Усе для штукатурки стін: список товарів | IM BAU', h1: 'Усе для штукатурки стін', ld: 'ItemList', idx: 'index, только для реального спроса'},
+  view: () => site(crumbs([['catalog', 'Каталог'], 'Для штукатурки стін']) + `<h1>Усе для штукатурки стін</h1>` + B(1, `<div class="bx s col"><label class="field">Площа стін, м²<input id="kit-a" value="40" inputmode="decimal"></label><span class="sm mut">Шар 10 мм, запас 10%.</span></div>`)
+    + B(2, `<div class="tscroll"><table class="tbl"><tr><th>Товар</th><th>Навіщо</th><th>Кількість</th><th>Сума</th><th></th></tr><tr><td>Ґрунтовка${X}</td><td>Підготовка основи</td><td>2 уп.</td><td>${ph('640 грн')}</td><td><button class="btn l sm" data-toast="Прототип: заміна товару">Замінити</button></td></tr><tr><td>${go('pdp', 'Штукатурка GS-41 TIGOR 15 кг')}${X}</td><td>Основний шар</td><td>27 міш.</td><td>6 966 грн</td><td><button class="btn l sm" data-toast="Прототип: заміна товару">Замінити</button></td></tr><tr><td>Стрічка малярська Front</td><td>Захист</td><td>2 рул.</td><td>70 грн</td><td><button class="btn l sm" data-toast="Прототип: заміна товару">Замінити</button></td></tr></table></div><div class="row btw" style="margin-top:10px"><span>Разом: <b class="price">7 036 грн</b> + ґрунтовка · 405 кг</span><button class="btn p" data-addkit>Додати все до кошика</button></div>`)
+    + B(3, `<div class="sm mut">Порада: ${go('blog', 'Як обрати штукатурку')}. Перевірено: ${go('author', 'технолог IM BAU')}, ${ph('02.11.2026')}</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'cart', g: 'Покупка', name: 'Корзина', pr: 'Запуск', key: 1, url: '/cart',
+  seo: {t: 'Кошик', h1: 'Кошик', ld: '—', idx: 'noindex'},
+  view: () => { const kg = cartWeight(), cap = 2000; return site(`<h1>Кошик</h1><div class="pdp"><div class="col">${B(1, cartRows())}${B(2, `<b>Не забули?</b><div class="g3" style="margin-top:6px">${['tape', 'gs41'].map(x => `<div class="bx row btw sm"><span>${PROD[x].name}${PROD[x].real ? '' : X}</span><button class="btn l sm" data-add-q="${x}">+ ${uah(PROD[x].packs[0][2])}</button></div>`).join('')}</div>`)}</div>
+    <div class="col">${B(3, `<div class="bx col"><div class="row btw"><span>Товари (${cartCount()})</span><b>${uah(cartSum())}</b></div><div class="col sm" style="gap:3px"><div class="row btw"><span>🚚 Наша машина</span><b>${f1(kg)} із ${ph(cap + ' кг')}</b></div><div class="bar"><i style="width:${Math.min(100, kg / cap * 100).toFixed(1)}%"></i></div></div><div class="row btw sm"><span>Доставка</span><span class="mut">на наступному кроці</span></div>${ph('Ще 2 300 грн до безоплатної доставки')}<details class="sm"><summary>Є промокод?</summary><div class="row" style="margin-top:5px"><input id="c-promo" class="btn l" style="flex:1;font-weight:400;min-width:0" aria-label="Промокод"><button class="btn l sm" data-toast="Прототип: промокод не перевіряється">Застосувати</button></div></details><div class="row btw"><b>Разом</b><b class="price">${uah(cartSum())}</b></div><a class="btn p w" href="#checkout" data-go="checkout">Оформити</a><button class="btn l w" data-open="oneclick">Замовити в 1 клік</button><div class="row btw sm"><a href="#catalog" data-go="catalog">Продовжити покупки</a><button class="ic" style="height:26px" data-toast="Прототип: посилання на кошик скопійовано">Поділитися кошиком</button></div></div>`)}
+    ${B(4, `<div class="sm alertbar">⚠ ${ph('Під час повітряної тривоги обробка замовлень і видача призупиняються')}</div>` + (npBlock() ? `<div class="bx s sm"><b>Новою поштою не поїде:</b> ${npBlock()}. Доступно: самовивіз і наша машина по Харкову.</div>` : `<div class="bx s sm">Усі товари можна відправити Новою поштою.</div>`))}
+    ${B(5, `<div class="sm mut">Є кошторис? <button class="ic" style="height:26px" data-open="quote">Прорахувати список</button></div>`)}</div></div>`); },
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'checkout', g: 'Покупка', name: 'Оформление заказа', pr: 'Запуск', key: 1, url: '/checkout',
+  seo: {t: 'Оформлення замовлення', h1: 'Оформлення замовлення', ld: '—', idx: 'noindex'},
+  view: () => site(`<h1>Оформлення замовлення</h1><div class="pdp"><form class="col" style="gap:14px" data-noform>
+    ${B(1, `<div class="col"><b>1. Місто та отримання</b><div class="row">${['Харків', 'Інше місто'].map(c => `<button type="button" class="chip ${S.city.startsWith(c.slice(0, 3)) ? 'on' : ''}" data-city="${c === 'Харків' ? c : 'Інше місто України'}">${c}</button>`).join('')}</div><div id="methods" class="col">${checkoutMethods()}</div></div>`)}
+    ${S.method === 'own' ? B(2, `<div class="col"><b>Адреса й розвантаження</b><label class="field">Адреса об'єкта<input id="c-addr"></label><div class="g2"><label class="field">Дата доставки<input id="c-dt" placeholder="Завтра, 10:00-14:00"></label><label class="field">Поверх<input id="c-fl" inputmode="numeric"></label></div><label class="row sm"><input id="c-up" type="checkbox"> Потрібні вантажники: ${ph('від 150 грн за виклик')}</label><label class="field">Контакт на об'єкті (необов'язково)<input id="c-ct"></label></div>`) : ''}
+    ${B(3, `<div class="col"><div class="row btw"><b>2. Контакти</b><span class="sm">Маєте акаунт? ${go('login', 'Увійти')}</span></div><label class="field">Телефон (обов'язково)<input id="c-t" inputmode="tel" value="+38 0"><span class="mut">Для підтвердження наявності та дзвінка водія.</span></label><label class="field">Ім'я (обов'язково)<input id="c-n"></label><label class="row sm"><input id="c-ms" type="checkbox" checked> Зв'язатися в Viber або Telegram замість дзвінка</label><details class="sm"><summary>Замовлення на компанію</summary><div class="g2" style="margin-top:6px"><label class="field">Назва компанії<input id="c-co"></label><label class="field">ЄДРПОУ або ІПН<input id="c-ed" inputmode="numeric"></label></div></details><span class="sm mut">Реєстрація не потрібна.</span></div>`)}
+    ${B(4, `<div class="col"><b>3. Оплата</b>${['Онлайн карткою', 'Карткою в магазині', 'Готівкою в магазині', 'За рахунком-фактурою', 'Карткою «єВідновлення»'].map((t, k) => `<label class="radio"><input id="p-${k}" type="radio" name="p" ${k ? '' : 'checked'}><span>${t}</span></label>`).join('')}</div>`)}
+    </form><div class="col">${B(5, `<div class="bx col checkout-sum"><b>Ваше замовлення</b><div class="row btw sm"><span>Товари (${cartCount()}), ${f1(cartWeight())} кг</span><b>${uah(cartSum())}</b></div><div class="row btw sm"><span>Доставка</span><span>${S.method === 'pick' ? 'безкоштовно' : S.method === 'own' ? ph('від 450 грн') : S.method === 'np' ? 'за тарифами перевізника' : 'оберіть спосіб'}</span></div><div class="row btw"><b>Разом</b><b class="price">${uah(cartSum())}</b></div><div class="sm alertbar">⚠ ${ph('Під час повітряної тривоги обробка замовлень і видача призупиняються')}</div>${DEMO ? '<button type="button" class="btn p w" data-order>Підтвердити замовлення</button>' : '<a class="btn p w" href="#success" data-go="success">Підтвердити замовлення</a>'}<span class="mut">Менеджер підтвердить наявність перед відправкою. Натискаючи, ви приймаєте ${go('offer', 'оферту')} і ${go('privacy', 'політику конфіденційності')}.</span></div>`)}</div></div>`),
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'success', g: 'Покупка', name: 'Страница успеха и ошибка оплаты', pr: 'Запуск', url: '/checkout/success · /checkout/failure',
+  seo: {t: 'Замовлення прийнято', h1: 'Дякуємо! Замовлення прийнято', ld: '—', idx: 'noindex'},
+  view: () => { const f = S.pay === 'fail'; return site(`<div class="seg" style="--line:var(--l)"><button aria-pressed="${!f}" data-paystate="ok">Успіх</button><button aria-pressed="${f}" data-paystate="fail">Оплата не пройшла</button></div>` + (f
+    ? B(1, `<h1>Оплата не пройшла</h1><p class="sm" style="margin-top:4px">Замовлення №${ph('12345')} збережено, товари зарезервовано ${ph('на 3 дні')}. Кошти не списано.</p>`) + B(2, `<div class="row"><button class="btn p" data-toast="Прототип: повтор оплати">Спробувати ще раз</button><button class="btn" data-toast="Прототип: зміна способу">Оплатити при отриманні</button><button class="btn l" data-open="callback">Допоможіть мені</button></div>`)
+    : B(1, `<h1>Дякуємо! Замовлення №${ph('12345')} прийнято</h1><p class="sm" style="margin-top:4px">Склад, сума й спосіб отримання нижче.</p>`) + B(2, `<div class="col"><div class="step"><b>1</b> Менеджер підтвердить наявність і вартість ${ph('за 15 хв у робочий час')}</div><div class="step"><b>2</b> Зберемо замовлення і сповістимо про готовність</div><div class="step"><b>3</b> Самовивіз: ${STORE}, або водій зателефонує перед приїздом</div></div>`) + B(3, `<div class="row"><button class="btn p" data-toast="Прототип: перехід у Telegram">Статус у Telegram</button><button class="btn" data-toast="Прототип: перехід у Viber">Статус у Viber</button>${go('tracking', 'Відстежити замовлення', 'btn l')}</div>`) + B(4, `<div class="bx s sm">Зберегти замовлення в кабінеті? Пароль не потрібен: вхід за телефоном. ${go('login', 'Створити кабінет')}</div>`))); },
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'calc', g: 'Услуги', name: 'Калькуляторы расхода', pr: 'После запуска', url: '/kalkuliatory',
+  seo: {t: 'Калькулятор витрати будматеріалів онлайн | IM BAU', h1: 'Калькулятори витрати', ld: 'WebApplication по желанию', idx: 'страницы index, результат не индексируется'},
+  view: () => { const m = S.cm || 'paint'; return site(crumbs(['Калькулятори']) + `<h1>Калькулятори витрати</h1>` + B(1, `<div class="chips">${[['paint', 'Фарба'], ['plaster', 'Штукатурка + ґрунт'], ['tile', 'Клей для плитки'], ['gkl', 'Гіпсокартон']].map(([k, t]) => `<button class="chip ${m === k ? 'on' : ''}" data-cm="${k}">${t}</button>`).join('')}</div>`)
+    + `<div class="pdp">` + B(2, m === 'paint' ? `<div class="bx col"><label class="field">Товар<select id="cl-p">${['acr', 'mat', 'fac'].map(i => `<option value="${i}">${PROD[i].name}</option>`).join('')}</select></label><div class="g2"><label class="field">Площа, м²<input id="cl-a" value="40" inputmode="decimal"></label><label class="field">Шарів<input id="cl-l" value="2" inputmode="numeric"></label></div><label class="field">Запас, %<input id="cl-z" value="10" inputmode="numeric"></label></div>` : `<div class="bx col"><label class="field">Площа, м²<input id="cm-a" value="40" inputmode="decimal"></label><span class="sm mut">Виріб і шар уточніть за техлистом.</span></div>`)
+    + B(3, `<div class="bx s col"><b>Результат</b>${m === 'paint' ? `<div id="cl-r"></div><p class="mut">Розрахунок орієнтовний, витрата ${RATE.acr}.</p><div class="row"><button class="btn p" data-addcalc>Усе до кошика</button><button class="btn" data-open="subscribe">Надіслати в Viber</button></div>` : `<div id="cm-r"></div><p class="mut">Розрахунок орієнтовний. Позицію можна замінити іншим товаром.</p><div class="row"><button class="btn p" data-addcm>Усе до кошика</button><button class="btn" data-open="subscribe">Надіслати в Viber</button></div>`}</div>`) + `</div>`); },
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'stores', g: 'Города', name: 'Магазины и контакты', pr: 'Запуск', key: 1, url: '/magazyny',
+  seo: {t: 'Магазин IM BAU в Харкові: адреса, графік, контакти', h1: 'Магазин і контакти', ld: 'HardwareStore / LocalBusiness: адрес и часы совпадают с текстом', idx: 'index'},
+  view: () => site(crumbs(['Магазин і контакти']) + `<h1>Магазин і контакти</h1>` + B(1, `<div class="pdp"><div class="col"><h2>IM BAU, ТЦ «Казка»</h2><span>${STORE}</span><span>Торговий зал: Пн-Сб 9:00-19:50, Нд 10:00-18:00, без вихідних</span><b>+38 (098) 332-30-30</b><span class="sm">kupuy@imbau.com.ua</span><div class="row"><button class="btn p" data-toast="Прототип: дзвінок">Подзвонити</button><button class="btn" data-toast="Прототип: відкриє маршрут">Маршрут</button></div><p class="sm">Як дістатися: ${ph('метро «Холодна гора», 5 хв пішки')}</p><div class="row"><span class="chip">Самовивіз</span><span class="chip">Колерування</span><span class="chip">Консультація</span></div><p class="sm mut">${ph('Торговий зал, студія колерування, завантаження авто з двору.')}</p></div>${img('Карта', '16/9')}</div>`)
+    + B(2, `<div class="g3">${['Вхід і вивіска', 'Торговий зал', 'Де паркуватися / завантажуватися'].map(t => img(t, '4/3')).join('')}</div>`)
+    + B(3, `<div class="bx s col"><b>Написати нам</b><input class="btn l" style="font-weight:400;text-align:left" placeholder="Пошук відповіді: доставка, повернення, замовлення" aria-label="Пошук відповіді"><div class="row sm">${go('tracking', 'Де моє замовлення')} · ${go('delivery', 'Умови доставки')} · ${go('returns', 'Повернення')}</div><div class="row"><button class="btn" data-toast="Прототип">Viber</button><button class="btn" data-toast="Прототип">Telegram</button><button class="btn" data-toast="Прототип">WhatsApp</button><button class="btn" data-open="callback">Передзвоніть мені</button></div></div>`)
+    + B(4, `<div class="bx sm mut">Поки що один магазин. Про нові адреси повідомимо тут.</div>`)),
+  notes: [],
+  market: [],
+  avoid: []});
+
+simple('returns', 'Информация', 'Обмен и возврат', 'Запуск', '/obmin-ta-povernennia', {t: 'Обмін та повернення | IM BAU', h1: 'Обмін та повернення', ld: 'MerchantReturnPolicy', idx: 'index'},
+  () => crumbs(['Обмін та повернення']) + `<h1>Обмін та повернення</h1>` + B(1, `<div class="col">${['Заповніть заявку або напишіть', 'Перевіримо чек і стан товару', 'Привезіть у магазин або надішліть', 'Повернемо кошти: картка ' + ph('3 дні') + ', рахунок ' + ph('7 днів') + ', післяплата ' + ph('7 днів після документів')].map((t, i) => `<div class="step"><b>${i + 1}</b><span>${t}</span></div>`).join('')}</div>`) + B(2, `<div class="g2"><div class="bx col"><b>Можна</b><span class="sm">Невикористаний товар в упаковці, з чеком, у строк ${ph('14 днів')}</span></div><div class="bx col"><b>Не можна</b><span class="sm">Заколерована фарба, різання на замовлення, ${ph('відкритий мішок')}</span></div></div>`) + B(3, `<div class="bx s sm"><b>Залишки матеріалу:</b> ${ph('Цілі мішки приймаємо 14 днів із чеком.')}</div>`) + B(4, `<form class="bx col" data-noform><b>Заявка на повернення</b><div class="g2"><label class="field">Номер замовлення<input id="r-n"></label><label class="field">Телефон<input id="r-t" value="+38 0"></label></div><label class="field">Товар і кількість<input id="r-p"></label><label class="field">Причина<select id="r-w"><option>Не підійшов</option><option>Брак</option><option>Залишок після робіт</option></select></label><button type="button" class="btn p" data-toast="Прототип: заявка не надсилається">Надіслати заявку</button><span class="sm">Або: <button type="button" class="ic" style="height:26px" data-toast="Прототип: файл не формується">Завантажити бланк заяви</button></span></form>`), [], [], []);
+
+simple('pro', 'Информация', 'Мастерам и бригадам', 'Запуск', '/maistram', {t: 'Будматеріали для майстрів і бригад | IM BAU', h1: 'Майстрам і бригадам', ld: 'BreadcrumbList', idx: 'index, если программа есть'},
+  () => crumbs(['Майстрам і бригадам']) + `<h1>Майстрам і бригадам</h1><p class="sm" style="max-width:70ch">Ми продаємо матеріали: ціна за обсяг, рахунок на компанію, список одним файлом.</p>` + B(1, `<div class="g3">${[['Ціна за обсяг', ph('від 5 000 грн −3%, від 20 000 грн −5%')], ['Рахунок на ФОП і ТОВ', 'Оплата за рахунком-фактурою вже є'], ['Прайс і документи', go('pricelist', 'Прайс-лист') + ' · ' + go('certs', 'Сертифікати')]].map(([a, b]) => `<div class="bx col"><b>${a}</b><span class="sm">${b}</span></div>`).join('')}</div>`) + B(2, `<div class="bx s col"><b>Прорахувати список</b><span class="sm">Надішліть кошторис: повернемо готовий кошик із цінами.</span><button class="btn p" data-open="quote">Надіслати список</button></div>`), [], [], []);
+simple('pricelist', 'Информация', 'Прайс-лист', 'Запуск', '/prais', {t: 'Ціни на будматеріали: прайс-лист | IM BAU', h1: 'Прайс-лист', ld: 'BreadcrumbList', idx: 'index по разделам, если цены актуальны'},
+  () => crumbs(['Прайс-лист']) + `<h1>Прайс-лист</h1>` + B(1, `<div class="row btw"><div class="chips">${['ЛФМ', 'Сухі суміші', 'Кріплення', 'Інструмент'].map((t, i) => `<button class="chip ${i ? '' : 'on'}" data-chip>${t}</button>`).join('')}</div><button class="btn sm" data-toast="Прототип: файл не формується">Скачати XLS</button></div>`) + B(2, `<div class="tscroll"><table class="tbl"><tr><th>Назва</th><th>Ціна</th><th>Наявність</th></tr>${['acr', 'mat', 'fac', 'sat', 'ven'].map(i => `<tr><td>${go('pdp', PROD[i].name).replace('data-go', `data-pdp="${i}" data-go`)}, ${PROD[i].packs[PROD[i].sel][0]}</td><td>${uah(PROD[i].packs[PROD[i].sel][2])}</td><td>+${X}</td></tr>`).join('')}</table></div><p class="sm mut" style="margin-top:5px">Оновлено: ${ph('02.11.2026')}</p>`), [], [], []);
+simple('installments', 'Информация', 'Оплата частями', 'Запуск: когда выбран банк', '/oplata-chastynamy', {t: 'Оплата частинами: умови | IM BAU', h1: 'Оплата частинами', ld: 'BreadcrumbList', idx: 'index, когда есть банк'},
+  () => crumbs(['Оплата частинами']) + `<h1>Оплата частинами</h1>` + B(1, `<div class="tscroll"><table class="tbl"><tr><th>Банк</th><th>Платежів</th><th>Сума</th><th>Товари</th></tr><tr><td>${ph('monobank «Покупка частинами»')}</td><td>${ph('до 6')}</td><td>${ph('від 1 000 грн')}</td><td>${ph('усі, крім уцінки')}</td></tr></table></div>`) + B(2, `<div class="sm">Позначка «частинами» в картці й у фільтрі. Оберіть цей спосіб під час ${go('checkout', 'оформлення')}.</div>`), [], [], []);
+simple('outlet', 'Информация', 'Уценка и распродажа', 'Запуск: при уценённых товарах', '/utsinka', {t: 'Уцінка та розпродаж | IM BAU', h1: 'Уцінка та розпродаж', ld: 'ItemList', idx: 'index при наличии товаров'},
+  () => crumbs(['Уцінка']) + `<h1>Уцінка та розпродаж</h1>` + B(1, `<div class="bx s sm">Причина уцінки вказана в кожній картці: пошкоджена упаковка, залишок партії. ${ph('Уцінені товари не обмінюються через вказану причину.')}</div>`) + B(2, `<div class="g4">${['tape', 'ven'].map(i => pcard(i)).join('')}</div>`), [], [], []);
+simple('jobs', 'Доверие', 'Вакансии', 'Запуск: при вакансиях', '/vakansii', {t: 'Вакансії IM BAU', h1: 'Вакансії', ld: 'JobPosting при реальных вакансиях', idx: 'index при открытых позициях'},
+  () => crumbs(['Вакансії']) + `<h1>Вакансії</h1>` + B(1, `<div class="col">${['Продавець-консультант', 'Водій'].map(t => `<div class="bx row btw"><span>${t}${X}</span><button class="btn l sm" data-toast="Прототип: перехід у Telegram">Написати</button></div>`).join('')}</div>`), [], [], []);
+
+
+page({id: 'hub', g: 'Каталог', name: 'Верхний раздел каталога', pr: 'Запуск', key: 1, url: '/sukhi-sumishi',
+  seo: {t: 'Сухі суміші, цемент, кладка: купити | IM BAU', h1: 'Сухі суміші, цемент, кладка', ld: 'BreadcrumbList, ItemList разделов', idx: 'index; без фильтров и сортировок'},
+  view: () => { const r = TREE[0].r[0]; return site(crumbs([['catalog', 'Каталог'], r[0]]) + `<h1>${r[0]}</h1>`
+    + B(1, UI.dev === 'phone' ? `<div class="col" style="gap:6px">${r[1].map(s => `<details class="acc"><summary>${s}</summary><div class="col sm" style="gap:6px">${['Для стін', 'Для фасаду', 'TIGOR'].map(x => `<a href="#landing" data-go="landing">${x}</a>`).join('')}<a href="#category" data-go="category" class="b">Усі: ${s} ›</a></div></details>`).join('')}</div>` : `<div class="g4">${r[1].map(s => `<div class="tile">${img('фото', '16/9')}<a href="#category" data-go="category"><b class="sm">${s}</b></a><div class="sm col" style="gap:2px">${['Для стін', 'Для фасаду', 'TIGOR'].map(x => `<a href="#landing" data-go="landing">${x}</a>`).join('')}<a href="#category" data-go="category" class="mut">Показати ще ›</a></div></div>`).join('')}</div>`)
+    + B(2, `<div class="row btw"><h2>Хіти розділу</h2>${go('category', 'Усі')}</div><div class="g4" style="margin-top:8px">${['gs41', 'tm12', 'ven', 'gkl'].map(i => pcard(i, {noqty: 1})).join('')}</div>`)
+    + B(3, logoStrip())
+    + B(4, `<h2>Сухі суміші: як обрати</h2>${lines(3)}${faq([['Чим штукатурка відрізняється від шпаклівки?', 'Коротка відповідь і посилання в розділи.']])}`)); },
+  notes: [],
+  market: [],
+  avoid: []});
+
+page({id: 'city', g: 'Города', name: 'Харьков: главная сайта в папке', pr: 'Запуск', key: 1, url: '/kharkiv/',
+  seo: {t: 'Будматеріали в Харкові: магазин і доставка | IM BAU', h1: 'Будматеріали в Харкові', ld: 'HardwareStore на главной и странице магазина, BreadcrumbList', idx: 'index; hreflang /kharkiv/ ↔ /ru/kharkiv/; без геопереадресации'},
+  view: () => PAGES.find(p => p.id === 'home').view()
+    .replace('Будівельні матеріали: інтернет-магазин IM BAU', 'Будматеріали в Харкові: магазин IM BAU')
+    .replace('<section class="bk " data-n="3">', B(11, `<div class="g3"><div class="bx col"><b>Самовивіз сьогодні</b><span class="sm">${STORE}<br>Пн-Сб 9:00-19:50, Нд 10:00-18:00</span>${go('stores', 'Маршрут')}</div><div class="bx col"><b>Наша машина по місту</b><span class="sm">Місто 450-900 грн${X}. Вартість залежить від відстані, ваги й довжини.</span>${go('delivery', 'Тарифи')}</div><div class="bx col"><b>Під'їзд і підйом</b><span class="sm">Під'їзд до 5 т, завантаження з двору${X}. Вантажники від 150 грн за виклик${X}.</span></div></div>`) + '<section class="bk " data-n="3">'),
+  notes: [],
+  market: [],
+  avoid: []});
+
+const more = (id, rows, avoid = []) => { const p = PAGES.find(x => x.id === id); p.market.push(...rows); (p.avoid = p.avoid || []).push(...avoid); };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const STATES = {};
+PAGES.forEach(p => { if (STATES[p.id]) p.st = STATES[p.id]; });
+
+const COVERAGE = [];
+
+const ORDER = ['home', 'catalog', 'hub', 'category', 'landing', 'pdp', 'kit', 'search', 'compare', 'brands', 'brand-front', 'brand-tigor', 'brand-other', 'stores', 'city', 'city-cat', 'tinting', 'evid', 'podbor', 'calc', 'cart', 'checkout', 'success', 'tracking', 'oneclick', 'login', 'account', 'delivery', 'returns', 'warranty', 'installments', 'loyalty', 'promo', 'outlet', 'pro', 'pricelist', 'about', 'reviews', 'certs', 'faq', 'jobs', 'blog', 'author', 'video', 'privacy', 'offer', 'errors', 'popups', 'sitemap'];
+PAGES.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+
+const pg = id => PAGES.find(x => x.id === id);
+const sumRange = ids => { const a = ids.map(i => PROD[i].packs[PROD[i].sel][2]); return a.length ? `У розділі <b>${a.length} ${a.length === 1 ? 'товар' : a.length < 5 ? 'товари' : 'товарів'}</b>, від <b>${uah(Math.min(...a))}</b> до <b>${uah(Math.max(...a))}</b>` : ''; };
+const chipGo = (id, t) => go(id, t, 'chip');
+
+pg('category').view = () => {
+  const cn = S.catName || 'Фарби інтер’єрні', s = secOf(cn), subs = (CATS.find(c => c[0] === s) || ['', ''])[1].split(' · ');
+  return site(crumbs([['catalog', 'Каталог'], ['hub', s], cn]) + `<h1>${cn}</h1>`
+    + `<div class="chips strip">${subs.map(t => `<a class="chipi ${t === cn ? 'cur' : ''}" href="#category" data-go="category"><span class="dot"></span>${t}</a>`).join('')}</div>` + logoStrip()
+    + listing(idsIn(cn))
+    + `<div class="bx s sm"><b>Не знаєте, скільки купити?</b> Вкажіть площу в картці товару або в ${go('calc', 'калькуляторі')}. Великий список? <button class="ic" style="height:26px" data-open="quote">Прорахувати список</button></div>`
+    + `<h2>${cn}: як обрати</h2>${lines(4)}<div class="bx sm" style="margin-top:8px">${sumRange(idsIn(cn))}</div>${faq([['Що обрати для мого завдання?', 'Коротка відповідь технолога.'], ['Є в магазині в Харкові?', 'Наявність видно в картці кожного товару.']])}`);
+};
+
+const landIds = t => {
+  const br = BRANDS.find(b => t.toLowerCase().includes(b.toLowerCase())), all = Object.keys(PROD);
+  if (br) { const base = S.catName ? idsIn(S.catName).filter(i => PROD[i].brand === br) : []; return base.length ? base : all.filter(i => PROD[i].brand === br); }
+  if (t.startsWith('Для ')) return all.filter(i => (PROD[i].use || []).includes(t));
+  const f = searchIds(t); return f.length ? f : (S.catName ? idsIn(S.catName) : idsIn('Штукатурки'));
+};
+pg('landing').view = () => {
+  const t = S.land || 'Штукатурка TIGOR', ids = landIds(t);
+  const br = BRANDS.find(b => t.toLowerCase().includes(b.toLowerCase())), h = br && !t.startsWith('Штукатурка') ? `${S.catName || 'Товари'} ${br}` : t;
+  return site(crumbs([['catalog', 'Каталог'], h]) + `<h1>${h}</h1>`
+    + `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#catalog" data-go="catalog">${br ? 'Бренд: ' + br : t} ✕</a></div><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Популярні підбірки:</span>${['Для стін', 'Для стелі', 'Для фасаду', 'Для підлоги'].map(x => `<a class="chip" href="#landing" data-go="landing">${x}</a>`).join('')}</div>`
+    + listing(ids)
+    + `<h2>${h}: що обрати</h2>${lines(3)}<div class="bx sm" style="margin-top:6px">${sumRange(ids)}</div>${faq([['Яка витрата на м²?', 'Дані з техлиста і посилання на калькулятор.'], ['Є в магазині в Харкові?', 'Наявність видно в картці кожного товару.']])}`);
+};
+
+pg('hub').view = () => {
+  const n = S.catName && isSec(S.catName) ? S.catName : secOf(S.catName || '') || TREE[0].r[0][0], subs = CATS.find(c => c[0] === n)[1].split(' · '), ids = idsIn(n);
+  const tiles = UI.dev === 'phone'
+    ? `<div class="col" style="gap:6px">${subs.map(s => `<a class="acc" style="display:block;padding:11px 10px;font-weight:600;text-decoration:none;color:inherit" href="#category" data-go="category">${s}</a>`).join('')}</div>`
+    : `<div class="g4">${subs.map(s => `<a class="tile" style="text-decoration:none;color:inherit" href="#category" data-go="category">${img('фото', '16/9')}<b class="sm">${s}</b></a>`).join('')}</div>`;
+  return site(crumbs([['catalog', 'Каталог'], n]) + `<h1>${n}</h1>` + tiles
+    + (ids.length ? `<h2>Хіти розділу</h2><div class="g4" style="margin-top:8px">${ids.slice(0, 4).map(i => pcard(i, {noqty: 1})).join('')}</div>` : '')
+    + logoStrip() + `<h2>${n}: як обрати</h2>${lines(3)}`);
+};
+
+pg('search').view = () => {
+  const q = S.q || '';
+  if (!q) return site(`<h1>Пошук</h1><p class="sm">Введіть назву, бренд або артикул у рядку вгорі. Спробуйте:</p><div class="chips" style="margin-top:8px">${POPULAR.map(t => `<a class="chip" href="#search" data-go="search" data-q="${t}">${t}</a>`).join('')}</div>`);
+  const ids = searchIds(q);
+  if (!ids.length) return site(`<h1>За запитом «${esc(q)}» нічого немає</h1><p class="sm">Спробуйте інше слово або оберіть розділ.</p><div class="chips" style="margin-top:6px">${POPULAR.map(t => `<a class="chip" href="#search" data-go="search" data-q="${t}">${t}</a>`).join('')}</div><div class="g6" style="margin-top:10px">${CATS.slice(0, 6).map(c => `<a class="tile" href="#hub" data-go="hub"><span class="sm b">${c[0]}</span></a>`).join('')}</div><div class="bx s col" style="margin-top:10px"><b>Не знайшли товар?</b><span class="sm">Напишіть, що шукаєте. Перевіримо наявність або привеземо під замовлення.</span><label class="field">Телефон або Viber<input id="zero-t" value="+38 0"></label><button class="btn p" data-toast="Прототип: заявка не надсилається">Надіслати запит</button><span class="sm">+38 (098) 332-30-30</span></div>`);
+  const subs = {}; ids.forEach(i => { subs[PROD[i].sub] = (subs[PROD[i].sub] || 0) + 1; });
+  return site(`<h1>Результати для «${esc(q)}»</h1><div class="chips" style="margin-top:8px"><span class="sm mut" style="align-self:center">У розділах:</span>${Object.entries(subs).map(([t, n]) => `<a class="chip" href="#category" data-go="category" data-name="${t}">${t} (${n})</a>`).join('')}</div>` + listing(ids));
+};
+
+pg('compare').view = () => {
+  const c = S.cmp, row = (h, fn) => `<tr><th>${h}</th>${c.map(i => `<td>${fn(PROD[i], i)}</td>`).join('')}</tr>`;
+  const stock = p => (p.state || 'ok') === 'ok' ? `Є: ${p.stock} шт.` : p.state === 'order' ? 'Під замовлення' : 'Очікується';
+  return site(`<h1>Порівняння та обране</h1>`
+    + `<h2>Порівняння</h2>` + (c.length ? `<div class="tscroll"><table class="tbl"><tr><th></th>${c.map(i => `<th><a href="#pdp" data-go="pdp" data-pdp="${i}">${PROD[i].name}</a><br><button class="ic" style="height:24px" data-cmp="${i}">Прибрати</button></th>`).join('')}</tr>${row('Ціна', p => uah(p.packs[p.sel][2]))}${row('За одиницю', (p, i) => unitPrice(p, p.sel) || '—')}${row('Фасування', p => p.packs[p.sel][0])}${row('Бренд', p => p.brand)}${row('Витрата', (p, i) => RATE[i] || '—')}${row('Наявність', stock)}${row('', (p, i) => `<button class="btn p sm" data-add="${i}">До кошика</button>`)}</table></div>` : `<div class="bx s sm">Натисніть ⇄ на картці товару, щоб порівняти. ${go('catalog', 'Перейти до каталогу')}</div>`)
+    + `<h2>Обране</h2>` + (S.fav.length ? `<div class="g4">${S.fav.map(i => pcard(i)).join('')}</div>` : `<div class="bx s sm">Натисніть ♡ на картці товару. Обране працює без входу.</div>`));
+};
+
+pg('promo').view = () => {
+  const f = S.pf || 'Усі', all = ['acr', 'fac', 'gs41', 'tm12', 'mat', 'sat', 'shp', 'grn'];
+  const ids = all.filter(i => f === 'Усі' || PROD[i].brand === f || (f === 'Фарби' && PROD[i].cat === 'lfm') || (f === 'Суміші' && PROD[i].cat === 'mix'));
+  return site(crumbs(['Акції']) + `<h1>Акції та знижки</h1><div class="bx s sm">Акція FRONT діє <b>з 01.11 по 30.11</b>. Умови: знижка на відро 7 кг, не сумується з промокодом</div><div class="chips" style="margin-top:8px">${['Усі', 'FRONT', 'TIGOR', 'Фарби', 'Суміші'].map(t => `<button class="chip ${t === f ? 'on' : ''}" data-pf="${t}">${t}</button>`).join('')}</div><div class="g4" style="margin-top:8px">${ids.map(i => pcard(i)).join('')}</div>`);
+};
+
+const kitRows = () => { const a = Math.max(0, parseFloat(String(S.kitA ?? 40).replace(',', '.')) || 0); return [['grn', 'Підготовка основи', Math.ceil(a * 0.15 / 10)], ['gs41', 'Основний шар', Math.ceil(a * 9 * 1.1 / 15)], ['tape', 'Захист', 2]]; };
+const kitTable = () => { const r = kitRows(), sum = r.reduce((s, [i, , n]) => s + n * PROD[i].packs[0][2], 0), kg = r.reduce((s, [i, , n]) => s + n * PROD[i].packs[0][1], 0); return `<div class="tscroll"><table class="tbl"><tr><th>Товар</th><th>Навіщо</th><th>Кількість</th><th>Сума</th></tr>${r.map(([i, w, n]) => `<tr><td><a href="#pdp" data-go="pdp" data-pdp="${i}">${PROD[i].name}</a></td><td>${w}</td><td>${n}</td><td>${uah(n * PROD[i].packs[0][2])}</td></tr>`).join('')}</table></div><div class="row btw" style="margin-top:10px"><span>Разом: <b class="price">${uah(sum)}</b> · ${f1(kg)} кг</span><button class="btn p" data-addkit>Додати все до кошика</button></div>`; };
+pg('kit').view = () => site(crumbs([['catalog', 'Каталог'], 'Для штукатурки стін']) + `<h1>Усе для штукатурки стін</h1><div class="bx s col"><label class="field">Площа стін, м²<input id="kit-a" value="${S.kitA ?? 40}" inputmode="decimal"></label><span class="sm mut">Шар 10 мм, запас 10%. Розрахунок орієнтовний.</span></div><div id="kit-r" style="margin-top:10px">${kitTable()}</div><div class="sm mut" style="margin-top:8px">Порада: ${go('blog', 'Як обрати штукатурку')}. Перевірено: ${go('author', 'технолог IM BAU')}</div>`);
+
+const orderLines = o => o.items.map(x => { const p = PROD[x.id], [l, , c] = p.packs[x.pack]; return `<div class="row btw sm" style="flex-wrap:nowrap"><span>${p.name}, ${l} × ${x.qty}</span><b>${uah(c * x.qty)}</b></div>`; }).join('');
+const METH = {pick: 'Самовивіз із ТЦ «Казка»', own: 'Наша доставка', np: 'Нова пошта', call: 'Уточнить менеджер'};
+pg('success').view = () => {
+  const o = S.order; if (!o) return site(`<h1>Замовлень ще немає</h1><p class="sm">Додайте товар у кошик і оформіть замовлення.</p>${go('catalog', 'До каталогу', 'btn p')}`);
+  return site(`<h1>Дякуємо! Замовлення №${o.n} прийнято</h1><div class="bx col" style="margin-top:8px">${orderLines(o)}<div class="row btw"><span>${METH[o.method]}</span><b class="price">${uah(o.sum)}</b></div></div>
+    <div class="col" style="margin-top:12px"><div class="step"><b>1</b> Менеджер підтвердить наявність і вартість за 15 хв у робочий час</div><div class="step"><b>2</b> Зберемо замовлення і сповістимо про готовність</div><div class="step"><b>3</b> ${o.method === 'pick' ? 'Заберіть замовлення: ' + STORE : o.method === 'np' ? 'Надішлемо номер ТТН' : 'Водій зателефонує перед приїздом'}</div></div>
+    <div class="row" style="margin-top:12px"><button class="btn p" data-toast="Прототип: перехід у Telegram">Статус у Telegram</button><button class="btn" data-toast="Прототип: перехід у Viber">Статус у Viber</button>${go('tracking', 'Відстежити замовлення', 'btn l')}</div>
+    <div class="bx s sm" style="margin-top:12px">Зберегти замовлення в кабінеті? Пароль не потрібен: вхід за телефоном. ${go('login', 'Створити кабінет')}</div>
+    <p class="mut" style="margin-top:8px">Це прототип: замовлення нікуди не надіслано.</p>`);
+};
+
+pg('tracking').view = () => {
+  const r = S.trk, o = r && S.orders.find(x => String(x.n) === r);
+  return site(`<h1>Де моє замовлення?</h1><div class="g2"><label class="field">Номер замовлення<input id="tr-n" value="${S.order ? S.order.n : ''}" inputmode="numeric"></label><label class="field">Телефон<input id="tr-t" value="${S.order ? S.order.tel : '+38 0'}" inputmode="tel"></label></div><button class="btn p" style="margin-top:8px" data-track>Перевірити</button>`
+    + (r ? (o ? `<div class="bx col" style="margin-top:12px"><div class="row btw"><b>Замовлення №${o.n}</b><span class="ok">Прийнято</span></div><div class="bar"><i style="width:25%"></i></div><div class="sm mut">Прийнято → Збирається → Передано → Отримано</div>${orderLines(o)}</div>` : `<div class="bx s sm" style="margin-top:12px">Замовлення №${esc(r)} не знайдено. Перевірте номер або <button class="ic" style="height:26px" data-open="callback">зателефонуйте нам</button>.</div>`) : (S.orders.length ? '' : `<p class="sm mut" style="margin-top:8px">Оформіть замовлення в прототипі, і його номер підставиться сюди.</p>`)));
+};
+
+pg('login').view = () => site(`<h1>Вхід у кабінет</h1><div class="bx col" style="max-width:420px;margin-top:8px">${S.lg ? `<span class="sm">Код надіслано на ${esc(S.lg)}. У прототипі підійде будь-який.</span><label class="field">Код із SMS<input id="lg-c" inputmode="numeric"></label><button class="btn p w" data-lg="2">Увійти</button>` : `<label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-lg="1">Отримати код</button><button class="btn l w" data-lg="3">Увійти через Google</button><span class="mut">Новий клієнт? Після коду лише вкажіть ім'я. Пароль не потрібен.</span>`}</div><div class="sm mut" style="margin-top:8px">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`);
+
+pg('account').view = () => S.user ? site(`<h1>Мій кабінет</h1><div class="bx col" style="margin-top:8px"><b>Останні замовлення</b>${S.orders.length ? S.orders.map((o, k) => `<div class="row btw sm"><span>№${o.n} · Прийнято · ${uah(o.sum)}</span><button class="btn l sm" data-reorder="${k}">Повторити</button></div>`).join('') : `<span class="sm mut">Замовлень ще немає. ${go('catalog', 'До каталогу')}</span>`}</div><div class="g3" style="margin-top:10px"><div class="bx col"><b>Адреси об'єктів</b><span class="sm">Квартира, Холодна Гора</span><span class="sm">Дача, Мерефа</span><button class="btn l sm" data-toast="Прототип: адреса не зберігається">Додати об'єкт</button></div><div class="bx col"><b>Мій асортимент</b><span class="sm">Товари, які купуєте регулярно</span>${go('compare', 'Обране та порівняння')}</div><div class="bx col"><b>Знижки</b><span class="sm">Картка: 1% бонусами</span>${go('loyalty', 'Умови')}</div></div><button class="btn l sm" style="margin-top:10px" data-lg="0">Вийти</button>`) : site(`<h1>Мій кабінет</h1><p class="sm">Увійдіть за номером телефону.</p>${go('login', 'Увійти', 'btn p')}`);
+
+function demoRoute(t, d) {
+  let g = d.go; const txt = t.textContent.replace(/[›✕]/g, '').trim();
+  if (['category', 'hub', 'landing'].includes(g)) {
+    const nm = d.name || ALLN.filter(n => txt === n || txt.includes(n)).sort((a, b) => b.length - a.length)[0];
+    if (g === 'landing' && !(nm && txt === nm)) { S.land = txt; S.f = F0(); S.more = 0; return g; }
+    if (nm) { if (S.catName !== nm) { S.f = F0(); S.more = 0; } S.catName = nm; g = isSec(nm) ? 'hub' : 'category'; }
+  }
+  if (g === 'search' && d.q !== undefined) { S.q = d.q; S.f = F0(); S.more = 0; }
+  if (g === 'search' && d.q === undefined && !S.q) setTimeout(() => $('#wf-search')?.focus(), 50);
+  if (g === 'login' && S.user) g = 'account';
+  return g;
+}
+function placeOrder(items, method, tel, name) {
+  const o = {n: 12000 + Math.floor(Math.random() * 7000), items: items.map(x => ({...x})), sum: items.reduce((s, x) => s + PROD[x.id].packs[x.pack][2] * x.qty, 0), method, tel, name};
+  S.order = o; S.orders.unshift(o); S.trk = '';
+}
+const telOk = v => String(v || '').replace(/\D/g, '').length >= 12;
+function fieldErr(id, msg) { const e = $('#' + id); toast(msg); if (e) { e.classList.add('err'); e.focus(); e.scrollIntoView({block: 'center'}); } }
+function demoClick(t, d) {
+  if (d.order !== undefined) {
+    if (!S.method) { $('#methods')?.scrollIntoView({block: 'center'}); toast('Оберіть спосіб отримання'); return true; }
+    const tel = $('#c-t')?.value, nm = $('#c-n')?.value.trim();
+    if (!telOk(tel)) { fieldErr('c-t', 'Вкажіть телефон повністю'); return true; }
+    if (!nm) { fieldErr('c-n', "Вкажіть ім'я"); return true; }
+    placeOrder(S.cart, S.method, tel, nm); S.cart = []; S.form = {}; S.method = undefined; open_('success'); return true;
+  }
+  if (d.oc !== undefined) {
+    const tel = $('#oc-t')?.value; if (!telOk(tel)) { fieldErr('oc-t', 'Вкажіть телефон повністю'); return true; }
+    const q = Math.max(1, +$('#oc-q')?.value || 1), id = S.oc || S.pdp, whole = UI.cur === 'cart' && S.cart.length;
+    placeOrder(whole ? S.cart : [{id, pack: PROD[id].sel, qty: q}], 'call', tel, ''); if (whole) S.cart = []; closeModal(); open_('success'); return true;
+  }
+  if (d.addkit !== undefined) { kitRows().forEach(([i, , n]) => { if (n) addCart(i, 0, n); }); open_('cart'); return true; }
+  if (d.pid) S.oc = d.pid;
+  if (d.pf) { S.pf = d.pf; shell(); return true; }
+  if (d.track !== undefined) { const n = $('#tr-n')?.value.trim(); if (!n) { fieldErr('tr-n', 'Вкажіть номер замовлення'); return true; } S.trk = n; shell(); return true; }
+  if (d.lg !== undefined) {
+    if (d.lg === '1') { const v = $('#lg-t')?.value; if (!telOk(v)) { fieldErr('lg-t', 'Вкажіть телефон повністю'); return true; } S.lg = v; shell(); return true; }
+    if (d.lg === '2') { if (!$('#lg-c')?.value.trim()) { fieldErr('lg-c', 'Введіть код'); return true; } S.user = 1; S.lg = ''; open_('account'); return true; }
+    if (d.lg === '3') { S.user = 1; open_('account'); return true; }
+    S.user = 0; open_('home'); return true;
+  }
+  if (d.reorder !== undefined) { S.orders[+d.reorder].items.forEach(x => addCart(x.id, x.pack, x.qty)); open_('cart'); return true; }
+  return false;
+}
+function demoSugg(s, v) {
+  const ids = searchIds(v), subs = [...new Set(ids.map(i => PROD[i].sub))].slice(0, 3);
+  s.innerHTML = ids.length ? `${subs.length ? '<b class="sm mut">Розділи</b>' : ''}${subs.map(t => `<a href="#category" data-go="category" data-name="${t}">${t}</a>`).join('')}<b class="sm mut">Товари</b>${ids.slice(0, 4).map(i => `<a href="#pdp" data-go="pdp" data-pdp="${i}" class="row btw"><span>${PROD[i].name}</span><b>${uah(PROD[i].packs[PROD[i].sel][2])}</b></a>`).join('')}<a href="#search" data-go="search" data-q="${esc(v)}">Усі результати для «${esc(v)}» (${ids.length})</a>` : `<span class="sm mut">Нічого не знайшли. Спробуйте «фарба» або «штукатурка».</span>`;
+}
+
+const GROUPS = ['Основные', 'Каталог', 'Бренды', 'Города', 'Услуги', 'Покупка', 'Кабинет', 'Информация', 'Доверие', 'Контент', 'Юридические', 'Служебные'];
+const UI = {cur: 'overview', dev: innerWidth < 760 ? 'phone' : 'desk', tab: 'notes', marks: true};
+if (!DEMO) try { const m = localStorage.getItem('imb-dev'); if (m) UI.dev = m; } catch (e) {}
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function overview() { return ''; }
+
+const KH1 = ['catalog', 'category', 'landing', 'brands', 'brand-front', 'brand-tigor', 'brand-other', 'promo', 'delivery', 'tinting', 'calc', 'podbor', 'pro', 'pricelist', 'kit', 'outlet'];
+const NOCITY = ['pdp', 'blog', 'author', 'video', 'privacy', 'offer'];
+const kurl = u => S.region !== 'kharkiv' || NOCITY.includes(UI.cur) || !u.startsWith('/') || u.startsWith('/kharkiv') ? u : u.replace(/^\/\s*·\s*\/ru\/$/, '/').replace(/^/, '/kharkiv');
+const NOIDX = ['cart', 'checkout', 'success', 'login', 'account', 'compare', 'search', 'tracking'];
+const FOLDER = {home: 'city', category: 'city-cat'};
+function setRegion(r) {
+  S.region = r; S.city = r === 'kharkiv' ? 'Харків' : 'Інше місто України'; S.method = undefined; closeModal();
+  const back = Object.fromEntries(Object.entries(FOLDER).map(([k, v]) => [v, k]));
+  UI.cur = (r === 'kharkiv' ? FOLDER : back)[UI.cur] || UI.cur; shell();
+}
+function demoShell() {
+  const p = PAGES.find(x => x.id === UI.cur), sel = $('#sel');
+  sel.innerHTML = GROUPS.map(g => { const a = PAGES.filter(x => x.g === g && !['popups', 'oneclick'].includes(x.id)); return a.length ? `<optgroup label="${g}">${a.map(x => `<option value="${x.id}">${x.name}</option>`).join('')}</optgroup>` : ''; }).join(''); sel.value = UI.cur;
+  document.querySelectorAll('[data-dev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.dev === UI.dev));
+  document.querySelectorAll('.shell-top [data-region]').forEach(b => b.setAttribute('aria-pressed', b.dataset.region === S.region));
+  $('#stage').innerHTML = `<div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame"><div class="wf nomk" id="wf">${p.view()}</div></div>`;
+  if (S.region === 'kharkiv' && KH1.includes(p.id)) $('#wf h1')?.append(' у Харкові');
+  afterRender();
+}
+function shell() {
+  if (DEMO) return demoShell();
+  const p = PAGES.find(x => x.id === UI.cur);
+  $('#nav').innerHTML = `<a href="#overview" data-go="overview" ${UI.cur === 'overview' ? 'aria-current="page"' : ''}><b>Обзор и выводы</b></a><a href="#ia" data-go="ia" ${UI.cur === 'ia' ? 'aria-current="page"' : ''}><b>Структура сайта</b></a>` + GROUPS.map(g => `<h4>${g}</h4>` + PAGES.filter(x => x.g === g).map(x => `<a href="#${x.id}" data-go="${x.id}" ${x.id === UI.cur ? 'aria-current="page"' : ''}><span>${x.name}</span>${x.key ? '<small>★</small>' : ''}</a>`).join('')).join('');
+  const sel = $('#sel'); sel.innerHTML = `<option value="overview">Обзор и выводы</option><option value="ia">Структура сайта</option>` + GROUPS.map(g => `<optgroup label="${g}">${PAGES.filter(x => x.g === g).map(x => `<option value="${x.id}">${x.name}</option>`).join('')}</optgroup>`).join(''); sel.value = UI.cur;
+  document.querySelectorAll('[data-dev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.dev === UI.dev));
+  document.querySelectorAll('.shell-top [data-region]').forEach(b => b.setAttribute('aria-pressed', b.dataset.region === S.region));
+  $('#marks').setAttribute('aria-pressed', UI.marks);
+  const stage = $('#stage'), notes = $('#notes');
+  if (!p) { stage.innerHTML = UI.cur === 'ia' ? ia() : overview(); notes.hidden = true; $('.shell').classList.add('ov'); return; }
+  notes.hidden = false; $('.shell').classList.remove('ov');
+  stage.innerHTML = `<div class="pagehead"><h1>${p.name}</h1><span class="tag ${p.pr.startsWith('Запуск') ? '' : 'w'}">${p.pr}</span><code>${esc(kurl(p.url))}</code></div><div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame"><div class="wf ${UI.marks ? '' : 'nomk'}" id="wf">${p.view()}</div></div>`;
+  notes.innerHTML = `<h2>${p.name}</h2><div class="tabs" role="tablist">${[['notes', 'Решения'], ['market', 'Конкуренты'], ['st', 'Состояния'], ['seo', 'SEO']].map(([k, t]) => `<button role="tab" aria-selected="${UI.tab === k}" data-ntab="${k}">${t}</button>`).join('')}</div>${notePanel(p)}`;
+  if (S.region === 'kharkiv' && KH1.includes(p.id)) $('#wf h1')?.append(' у Харкові');
+  afterRender();
+}
+function notePanel(p) {
+  if (UI.tab === 'market') return `<table class="mk-table">${p.market.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>${p.avoid?.length ? `<h2 style="margin-top:14px">Чего избегать</h2><ul>${p.avoid.map(a => `<li>${a}</li>`).join('')}</ul>` : ''}`;
+  if (UI.tab === 'st') return p.st ? `<h2>Состояния страницы</h2><ul>${p.st.s.map(x => `<li>${x}</li>`).join('')}</ul><h2 style="margin-top:12px">События аналитики</h2><ul>${p.st.e.map(x => `<li>${x}</li>`).join('')}</ul>` : '<p class="sm">Обычная страница: особых состояний нет. Общие события: page_view и клики по контактам.</p>';
+  if (UI.tab === 'seo') return `<dl><dt>URL</dt><dd>${esc(kurl(p.url))}</dd><dt>TITLE</dt><dd>${esc(S.region === 'kharkiv' && !NOCITY.includes(p.id) ? p.seo.t.replace(' | IM BAU', ' у Харкові | IM BAU') : p.seo.t)}</dd><dt>H1</dt><dd>${esc(p.seo.h1)}</dd><dt>CANONICAL</dt><dd>${NOIDX.includes(p.id) || !p.url.startsWith('/') ? 'Не нужен: страница не индексируется или это окно' : 'На себя: ' + esc(kurl(p.url))}</dd><dt>РАЗМЕТКА</dt><dd>${esc(p.seo.ld)}</dd><dt>ИНДЕКСАЦИЯ</dt><dd>${esc(p.seo.idx)}</dd></dl>`;
+  return p.notes.map(([n, t, w, f, i]) => `<div class="note" data-note="${n}" tabindex="0"><i>${n}</i><div><b>${t}</b>${w}<div class="m">Источник: ${f}<br>Реализация: ${i}</div></div></div>`).join('');
+}
+function open_(id, fromHistory) { $('#nav').classList.remove('open'); if (DEMO && (id === 'overview' || id === 'ia' || !PAGES.some(x => x.id === id))) id = 'home'; if (DEMO && id === 'checkout' && !S.cart.length) id = 'cart'; S.more = 0; if (S.region === 'kharkiv' && FOLDER[id]) id = FOLDER[id]; if (S.region === 'ua' && Object.values(FOLDER).includes(id)) { S.region = 'kharkiv'; S.city = 'Харків'; S.method = undefined; } UI.cur = PAGES.some(x => x.id === id) || id === 'overview' || id === 'ia' ? id : 'overview'; S.tab = 0; shell(); try { if (DEMO && !fromHistory) history.pushState(null, '', '#' + UI.cur); else history.replaceState(null, '', '#' + UI.cur); } catch (e) {} scrollTo({top: 0}); }
+function afterRender() { updateCalc(); updateMainCalc(); updateMix(); Object.entries(S.form).forEach(([k, v]) => { const e = document.getElementById(k); if (e) e.value = v; }); }
+function updateMix() {
+  const r = $('#cm-r'); if (!r) return; const area = +String($('#cm-a').value).replace(',', '.') || 0, m = S.cm;
+  const rows = m === 'tile' ? [['tm12', 4, 'клей 4 кг/м²']] : m === 'gkl' ? [['gkl', 1 / 3, 'лист на 3 м²']] : [['gs41', 9, 'штукатурка 9 кг/м², шар 10 мм']];
+  S.cmr = rows.map(([id, k]) => { const p = PROD[id], q = m === 'gkl' ? area * k * 1.1 : area * k * 1.1 / p.packs[0][1]; return {id, n: Math.ceil(q)}; });
+  const list = S.cmr.map((x, i) => { const p = PROD[x.id], [l, w, c] = p.packs[0]; return `<div class="row btw sm"><span>${p.name}${X}<br><span class="mut">${rows[i][2]}</span></span><b>${x.n} × ${l} = ${uah(x.n * c)}</b></div>`; }).join('');
+  r.innerHTML = list + (m === 'plaster' ? `<div class="row btw sm"><span>Ґрунтовка${X}</span><span>${ph('норма та ціна')}</span></div>` : '') + `<div class="price">${uah(S.cmr.reduce((s, x) => s + x.n * PROD[x.id].packs[0][2], 0))}</div><div class="sm mut">Вага: ${f1(S.cmr.reduce((s, x) => s + x.n * PROD[x.id].packs[0][1], 0))} кг</div>`;
+}
+function modal(k) {
+  closeModal(); const f = $('#frame'); if (!f || !MODALS[k]) return;
+  const top = Math.max(12, scrollY - (f.getBoundingClientRect().top + scrollY) + 40);
+  const d = document.createElement('div'); d.className = 'drawer'; d.id = 'dr'; d.innerHTML = `<div class="dr-p ${k === 'menu' ? 'wide' : ''}" role="dialog" aria-modal="true" style="top:${top}px"><button class="dr-x" aria-label="Закрити" data-close>×</button>${MODALS[k]()}</div>`;
+  $('#wf').appendChild(d); $('#wf').style.position = 'relative'; f.style.minHeight = (top + 520) + 'px'; d.querySelector('input,button.btn')?.focus?.();
+}
+function closeModal() { $('#dr')?.remove(); }
+function toast(t) { const e = $('#toast'); e.textContent = t; e.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => e.hidden = true, 2200); }
+function updateCalc() {
+  const a = $('#pd-area'), r = $('#pd-res'); if (!a || !r) return; const id = S.pdp, p = PROD[id], [l, w, c] = p.packs[p.sel], area = parseFloat(String(a.value).replace(',', '.')) || 0;
+  if (p.cat === 'sheet') { const n = Math.ceil(area * 1.1 / 3); r.innerHTML = `<b>${n} ${n === 1 ? 'лист' : 'листів'}</b> із запасом 10% · ${uah(n * c)} · ${(n * w).toFixed(0)} кг${X}`; S.need = n; return; }
+  const layers = p.cat === 'lfm' ? 2 : 1, kg = area * layers / COVER[id], n = Math.ceil(kg * 1.1 / w);
+  r.innerHTML = `Потрібно приблизно ${f1(kg)} кг (${layers} ${layers > 1 ? 'шари' : 'шар'}, ${RATE[id]}${X}). <b>${n} × ${l}</b> = ${uah(n * c)} із запасом 10%, вага ${f1(n * w)} кг. ${go('calc', 'Детальніше')}`; S.need = n;
+}
+function updateMainCalc() {
+  const r = $('#cl-r'); if (!r) return; const id = $('#cl-p').value, p = PROD[id], a = +String($('#cl-a').value).replace(',', '.') || 0, l = +$('#cl-l').value || 1, z = +$('#cl-z').value || 0, kg = a * l / COVER[id] * (1 + z / 100);
+  // Найменша сума серед фасувань: перебираємо кількість великих упаковок і добираємо дрібними
+  let best = null; const pk = p.packs; for (let b = 0; b <= Math.ceil(kg / pk[2][1]); b++) for (let m = 0; m <= Math.ceil(Math.max(0, kg - b * pk[2][1]) / pk[1][1]); m++) { const rest = kg - b * pk[2][1] - m * pk[1][1], s = rest > 0 ? Math.ceil(rest / pk[0][1]) : 0, cost = b * pk[2][2] + m * pk[1][2] + s * pk[0][2]; if (!best || cost < best.cost) best = {b, m, s, cost}; }
+  S.best = {id, ...best};
+  r.innerHTML = `<div class="sm">Потрібно приблизно <b>${f1(kg)} кг</b></div><div>${[[best.b, pk[2]], [best.m, pk[1]], [best.s, pk[0]]].filter(x => x[0]).map(x => `${x[0]} × ${x[1][0]}`).join(' + ') || '—'}</div><div class="price">${uah(best.cost)}</div>`;
+}
+document.addEventListener('click', e => {
+  const hc = e.target.closest('.hc'), open = $('.hc.open'); if (open && open !== hc) open.classList.remove('open');
+  if (hc && e.target.closest('.hc-a') && matchMedia('(hover:none)').matches && !hc.classList.contains('open')) { e.preventDefault(); hc.classList.add('open'); return; }
+  const t = e.target.closest('button,a,[data-note],summary'); if (!t) return; const d = t.dataset;
+  if (DEMO && demoClick(t, d)) return;
+  if (d.go || d.close !== undefined || d.open || d.scroll) { if (t.tagName === 'A') e.preventDefault(); }
+  if (d.fav) { const a = S.fav, on = a.includes(d.fav); if (on) a.splice(a.indexOf(d.fav), 1); else a.push(d.fav); toast(on ? 'Прибрано з обраного' : 'Додано в обране'); return shell(); }
+  if (d.cmp) { const a = S.cmp, on = a.includes(d.cmp); if (on) a.splice(a.indexOf(d.cmp), 1); else a.push(d.cmp); toast(on ? 'Прибрано з порівняння' : 'Додано до порівняння'); return shell(); }
+  if (d.sort) { S.sort = d.sort; return shell(); }
+  if (d.fx) { S.f[d.fx] = S.f[d.fx] ? 0 : 1; S.more = 0; return shell(); }
+  if (d.frm) { const f = S.f, k = d.frm; if (Array.isArray(f[k])) f[k] = f[k].filter(x => String(x) !== d.v); else f[k] = k === 'min' || k === 'max' ? '' : 0; S.more = 0; return shell(); }
+  if (d.freset !== undefined) { const m = !!$('#dr'); S.f = F0(); S.more = 0; shell(); if (m) modal('filter'); return; }
+  if (d.more !== undefined) { S.more += 8; return shell(); }
+  if (d.dev) { UI.dev = d.dev; try { localStorage.setItem('imb-dev', UI.dev); } catch (x) {} return shell(); }
+  if (t.id === 'marks') { UI.marks = !UI.marks; return shell(); }
+  if (d.ntab) { UI.tab = d.ntab; return shell(); }
+  if (d.note) { document.querySelectorAll('.note').forEach(n => n.classList.toggle('on', n.dataset.note === d.note)); document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.n === d.note)); $(`.bk[data-n="${d.note}"]`)?.scrollIntoView({block: 'center', behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth'}); return; }
+  if (d.mk) { UI.tab = 'notes'; if (!$('.note')) shell(); document.querySelectorAll('.note').forEach(n => { const on = n.dataset.note === d.mk; n.classList.toggle('on', on); if (on) n.scrollIntoView({block: 'nearest'}); }); document.querySelectorAll('.bk').forEach(b => b.classList.toggle('on', b.dataset.n === d.mk)); return; }
+  if (d.pdp) S.pdp = d.pdp;
+  if (d.pdpset) { S.pdp = d.pdpset; return shell(); }
+  if (d.pack !== undefined) { PROD[S.pdp].sel = +d.pack; return shell(); }
+  if (d.tab !== undefined) { S.tab = +d.tab; return shell(); }
+  if (d.pstate) { S.pstate = d.pstate; return shell(); }
+  if (d.paystate) { S.pay = d.paystate; return shell(); }
+  if (d.cm) { S.cm = d.cm; return shell(); }
+  if (d.anchor !== undefined) { S.tab = +d.anchor; shell(); $('#pd-tabs')?.scrollIntoView({block: 'start'}); return; }
+  if (d.quick) { S.quick = d.quick; return modal('quick'); }
+  if (d.addpair) { addCart(d.addpair, PROD[d.addpair].sel, 1); addCart('tape', 0, 1); return modal('added'); }
+  if (d.addcm !== undefined) { (S.cmr || []).forEach(x => addCart(x.id, 0, x.n)); return open_('cart'); }
+  if (d.htab) { S.htab = d.htab; return shell(); }
+  if (d.zero !== undefined) { S.zero = +d.zero; return shell(); }
+  if (d.mroot !== undefined) { S.mroot = d.mroot === 'back' ? null : +d.mroot; return modal('menu'); }
+  if (d.open === 'menu') S.mroot = null;
+  if (d.region) return setRegion(d.region);
+  if (d.city) return setRegion(d.city === 'Харків' ? 'kharkiv' : 'ua');
+  if (t.id === 'navbtn') { $('#nav').classList.toggle('open'); return; }
+  if (d.add) { const q = +$(`#q-pd`)?.value && UI.cur === 'pdp' && d.add === S.pdp ? +$('#q-pd').value : +($(`#q-l${d.add}`)?.value || 1); addCart(d.add, PROD[d.add].sel, q); const n = $('#cart-n'); if (n) n.textContent = cartCount(); return modal('added'); }
+  if (d.addQ) { addCart(d.addQ, 0, 1); closeModal(); toast('Додано до кошика'); return shell(); }
+  if (d.addkit !== undefined) { addCart('gs41', 0, 27); addCart('tape', 0, 2); return open_('cart'); }
+  if (d.addcalc !== undefined && S.best) { const p = PROD[S.best.id]; if (S.best.b) addCart(S.best.id, 2, S.best.b); if (S.best.m) addCart(S.best.id, 1, S.best.m); if (S.best.s) addCart(S.best.id, 0, S.best.s); return open_('cart'); }
+  if (d.cq !== undefined) { const x = S.cart[+d.cq]; x.qty += +d.d; if (x.qty < 1) S.cart.splice(+d.cq, 1); return shell(); }
+  if (d.dq) { const box = t.closest('[data-qty]'), i = box.querySelector('input'); i.value = Math.max(1, (+i.value || 1) + +d.dq); const s = $('#pd-sum'); if (s && box.dataset.qty === 'pd') { const p = PROD[S.pdp], [, w, c] = p.packs[p.sel], q = +i.value; s.innerHTML = `Разом: <b>${uah(c * q)}</b> · ${f1(w * q)} кг`; } return; }
+  if (d.chip !== undefined) { if (DEMO) t.parentElement.querySelectorAll('[data-chip]').forEach(c => { if (c !== t) c.classList.remove('on'); }); t.classList.toggle('on'); return; }
+  if (d.scroll) { $('#' + d.scroll)?.scrollIntoView({block: 'center'}); return; }
+  if (d.open) return modal(d.open);
+  if (d.toast) { toast(d.toast); if (d.close !== undefined) closeModal(); return; }
+  if (d.go) { closeModal(); return open_(DEMO ? demoRoute(t, d) : d.go); }
+  if (d.close !== undefined) return closeModal();
+});
+document.addEventListener('change', e => { const d = e.target.dataset; if (d.f) { const f = S.f, k = d.f, m = !!$('#dr'); if (k === 'min' || k === 'max') f[k] = e.target.value.replace(/\D/g, ''); else if (d.v !== undefined) { const v = k === 'p' ? +d.v : d.v; f[k] = e.target.checked ? [...f[k], v] : f[k].filter(x => x !== v); } else f[k] = e.target.checked ? 1 : 0; S.more = 0; shell(); if (m) modal('filter'); return; } if (d.method) { S.method = d.method; shell(); } if (e.target.id === 'sel') open_(e.target.value); if (e.target.id === 'cl-p') updateMainCalc(); });
+document.addEventListener('input', e => {
+  const id = e.target.id; if (DEMO && /^(c|tr|kit)-/.test(id) && e.target.type !== 'checkbox' && e.target.type !== 'radio') S.form[id] = e.target.value; e.target.classList?.remove('err'); if (DEMO && id === 'kit-a') { S.kitA = e.target.value; const r = $('#kit-r'); if (r) r.innerHTML = kitTable(); } if (id === 'pd-area') updateCalc(); if (id === 'cm-a') updateMix(); if (['cl-a', 'cl-l', 'cl-z'].includes(id)) updateMainCalc();
+  if (id === 'wf-search' && DEMO) { const s = e.target.nextElementSibling, v = e.target.value.trim(); s.hidden = !v; if (v) demoSugg(s, v); return; }
+  if (id === 'wf-search') { const s = e.target.nextElementSibling, v = e.target.value.trim(); s.hidden = !v; s.innerHTML = `<b class="sm mut">Запити</b>${go('search', esc(v) + ' FRONT')}${go('search', esc(v) + ' TIGOR')}<b class="sm mut">Розділи</b>${go('category', 'Фарби інтер’єрні')}${go('landing', 'Штукатурка TIGOR')}<b class="sm mut">Товари</b>${['acr', 'gs41'].map(i => `<a href="#pdp" data-go="pdp" data-pdp="${i}" class="row btw"><span>${PROD[i].name}</span><b>${uah(PROD[i].packs[PROD[i].sel][2])}</b></a>`).join('')}${go('search', `Усі результати для «${esc(v)}»`)}`; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); if (e.key === 'Enter' && e.target.id === 'wf-search') { e.preventDefault(); S.zero = 0; if (DEMO) { S.q = e.target.value.trim(); S.f = F0(); } open_('search'); } if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.note) { e.preventDefault(); e.target.click(); } });
+document.addEventListener('focusin', e => { if (e.target.id === 'wf-search' && !e.target.value.trim()) { const s = e.target.nextElementSibling; s.hidden = false; s.innerHTML = `<b class="sm mut">Часто шукають</b><div class="row" style="margin-top:4px">${['фарба біла', 'штукатурка', 'гіпсокартон', 'клей для плитки', 'FRONT', 'TIGOR'].map(t => `<a class="chip" href="#search" data-go="search" data-q="${t}">${t}</a>`).join('')}</div>`; } });
+document.addEventListener('click', e => { const s = $('.sugg'); if (s && !s.hidden && !e.target.closest('.search')) s.hidden = true; });
+document.addEventListener('submit', e => e.preventDefault());
+if (DEMO) window.addEventListener('popstate', () => { closeModal(); open_((location.hash || '').slice(1) || 'home', true); });
+open_((location.hash || '').slice(1) || (DEMO ? 'home' : 'overview'), true);
+
+</script>
