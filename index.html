@@ -576,7 +576,7 @@ page({id: 'landing', g: 'Каталог', name: 'Посадочная фильт
   seo: {t: 'Штукатурка TIGOR: ціна, купити | IM BAU. Description: «Ціна від X грн, у наявності N шт.»', h1: 'Штукатурка TIGOR', ld: 'BreadcrumbList, ItemList', idx: 'index только по белому списку, максимум 2 значения, порядок сегментов один. Остальное noindex. Меньше порога товаров: не создаём'},
   view: () => site(crumbs([['category', 'Сухі суміші'], ['category', 'Штукатурки'], 'TIGOR'])
     + B(1, `<h1>Штукатурка TIGOR</h1><p class="sm" style="margin-top:4px;max-width:70ch">До двох рядків: для яких основ і яка витрата. Основний текст під товарами.</p>`)
-    + B(2, `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#category" data-go="category">Бренд: TIGOR ✕</a></div><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Популярні підбірки:</span>${['Гіпсові', 'Цементні', 'Для фасаду', 'Машинне нанесення'].map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`)
+    + B(2, `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#category" data-go="category">Бренд: TIGOR ✕</a></div>${[['Основа', ['Гіпсові', 'Цементні']], ['Призначення', ['Для фасаду', 'Машинне нанесення']], ['Фасування', ['25 кг', '30 кг']]].map(([g, a]) => `<div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">${g}:</span>${a.map(t => `<a class="chip" href="#landing" data-go="landing">${t}</a>`).join('')}</div>`).join('')}`)
     + B(3, listing(['gs41', 'tm12', 'gkl', 'lor']))
     + B(4, `<h2>Штукатурка TIGOR: що обрати</h2>${lines(3)}<div class="bx sm" style="margin-top:6px">У підбірці <b>9 товарів</b>${X}, від <b>258 грн</b>${X}</div>${faq([['Яка витрата на м²?', 'Дані з техлиста з посиланням на калькулятор.'], ['Чи є в магазині в Харкові?', 'Наявність по точці, посилання на сторінку магазину.']])}`)),
   notes: [],
@@ -770,9 +770,11 @@ const landIds = t => {
 };
 pg('landing').view = () => {
   const t = S.land || 'Штукатурка TIGOR', ids = landIds(t);
-  const br = BRANDS.find(b => t.toLowerCase().includes(b.toLowerCase())), h = br && !t.startsWith('Штукатурка') ? `${S.catName || 'Товари'} ${br}` : t;
+  // Чип показує коротку ознаку, H1 посадкової — повна назва: «Штукатурка гіпсова», «Штукатурка 25 кг»
+  const FULL = {'Для стін': 'Штукатурка для стін', 'Для стелі': 'Штукатурка для стелі', 'Для фасаду': 'Штукатурка фасадна', 'Для підлоги': 'Суміші для підлоги', 'Гіпсові': 'Штукатурка гіпсова', 'Цементні': 'Штукатурка цементна', '25 кг': 'Штукатурка 25 кг', '30 кг': 'Штукатурка 30 кг'};
+  const br = BRANDS.find(b => t.toLowerCase().includes(b.toLowerCase())), h = FULL[t] || (br && !t.startsWith('Штукатурка') ? `${S.catName || 'Товари'} ${br}` : t);
   return site(crumbs([['catalog', 'Каталог'], h]) + `<h1>${h}</h1>`
-    + `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#catalog" data-go="catalog">${br ? 'Бренд: ' + br : t} ✕</a></div><div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">Популярні підбірки:</span>${['Для стін', 'Для стелі', 'Для фасаду', 'Для підлоги'].map(x => `<a class="chip" href="#landing" data-go="landing">${x}</a>`).join('')}</div>`
+    + `<div class="row sm"><b>Ви обрали:</b><a class="chip on" href="#catalog" data-go="catalog">${br ? 'Бренд: ' + br : t} ✕</a></div>${[['Призначення', ['Для стін', 'Для стелі', 'Для фасаду', 'Для підлоги']], ['Основа', ['Гіпсові', 'Цементні']], ['Фасування', ['25 кг', '30 кг']]].map(([g, a]) => `<div class="chips" style="margin-top:6px"><span class="sm mut" style="align-self:center">${g}:</span>${a.map(x => `<a class="chip" href="#landing" data-go="landing">${x}</a>`).join('')}</div>`).join('')}`
     + listing(ids)
     + `<h2>${h}: що обрати</h2>${lines(3)}<div class="bx sm" style="margin-top:6px">${sumRange(ids)}</div>${faq([['Яка витрата на м²?', 'Дані з техлиста і посилання на калькулятор.'], ['Є в магазині в Харкові?', 'Наявність видно в картці кожного товару.']])}`);
 };
