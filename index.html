@@ -1,4 +1,17 @@
-<meta name="robots" content="noindex,nofollow"><title>Прототип сайта IM BAU</title>
+<meta charset="utf-8">
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGCF55BB');</script>
+<!-- End Google Tag Manager -->
+<meta name="robots" content="noindex,nofollow">
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGCF55BB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+<title>Прототип сайта IM BAU</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
@@ -109,6 +122,7 @@ button,input,select,textarea{font:inherit}
 .ic{border:1px solid var(--l);background:#fff;border-radius:5px;min-width:38px;height:38px;padding:0 7px;cursor:pointer;font-size:12.5px;display:inline-flex;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--i)}
 .hd-nav{display:none}.hd-d{display:none}
 .drawer{position:absolute;inset:0;z-index:40;background:#0006}
+.oc{display:grid;grid-template-columns:minmax(0,190px) minmax(0,1fr);gap:12px}.dr-p.mid{width:min(calc(100% - 20px),640px)}@media (max-width:560px){.oc{grid-template-columns:1fr}.oc>.img{max-width:180px}}
 .dr-p{position:absolute;left:0;right:0;margin-inline:auto;width:min(calc(100% - 20px),480px);background:#fff;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px #0005}
 .dr-x{position:absolute;top:6px;right:6px;width:36px;height:36px;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--i)}
 .ftr{background:#3a403d;color:#fff;padding:0 12px;margin-top:10px;font-size:13.5px}.ftr a{color:#fff;display:block;padding:4px 0}
@@ -312,7 +326,23 @@ const MODALS = {
   },
   city: () => `<h3>Ваше місто</h3><p class="sm mut">Основний сайт працює на всю Україну. Для Харкова є окрема версія із самовивозом і нашою машиною.</p><button class="btn l w" data-region="ua">Уся Україна</button><button class="btn l w" data-region="kharkiv">Харків</button><p class="mut">Не перенаправляємо автоматично за геолокацією: вибір за вами й запам'ятовується. Від міста залежать ціна, наявність і способи доставки.</p>`,
   callback: () => `<h3>Замовити дзвінок</h3><label class="field">Телефон<input id="cb-t" inputmode="tel" value="+38 0"></label><label class="field">Що уточнити<select id="cb-g"><option>Ціна та наявність</option><option>Скільки матеріалу потрібно</option><option>Колерування</option><option>Доставка</option></select></label><label class="row sm"><input id="cb-m" type="checkbox"> Відповісти у Viber або Telegram</label><button class="btn p w" data-toast="Прототип: дзвінок не замовляється" data-close>Передзвоніть мені</button><p class="mut">Або напишіть: Viber · Telegram · WhatsApp</p>`,
-  oneclick: () => `<h3>Швидке замовлення</h3><p class="sm">Менеджер підтвердить наявність, спосіб отримання і вартість доставки.</p><label class="field">Телефон<input id="oc-t" inputmode="tel" value="+38 0"></label><label class="field">Кількість<input id="oc-q" inputmode="numeric" value="1"></label><button class="btn p w" ${DEMO ? 'data-oc' : 'data-go="success" data-close'}>Зарезервувати / порадитися</button><p class="mut">Телефон потрібен лише для зв'язку щодо цього замовлення.</p>`,
+  oneclick: () => {
+    const whole = UI.cur === 'cart' && S.cart.length, id = PROD[S.oc] ? S.oc : (PROD[S.pdp] ? S.pdp : 'acr'), p = PROD[id], [lab, w, c] = p.packs[p.sel], q = S.ocq || 1;
+    const heavy = whole ? S.cart.some(x => PROD[x.id].cat === 'lfm' || PROD[x.id].cat === 'sheet' || PROD[x.id].packs[x.pack][1] > 30) : (p.cat === 'lfm' || w > 30 || p.cat === 'sheet');
+    const sum = whole ? cartSum() : c * q;
+    const head = whole
+      ? `<div class="bx s col sm"><b>Замовлення з кошика: ${S.cart.length} поз.</b>${S.cart.map(x => `<div class="row btw"><span>${PROD[x.id].name}, ${PROD[x.id].packs[x.pack][0]} × ${x.qty}</span><b>${uah(PROD[x.id].packs[x.pack][2] * x.qty)}</b></div>`).join('')}<div class="row btw"><span>Разом</span><b>${uah(sum)}</b></div></div>`
+      : `<div class="oc">${img('фото товару', '1/1')}<div class="col" style="gap:8px"><div class="row btw" style="align-items:flex-start;flex-wrap:nowrap"><div class="col sm" style="gap:2px"><span>Код товару: ${ph('4712')}</span><span>Виробник: ${go(p.brand === 'FRONT' ? 'brand-front' : p.brand === 'TIGOR' ? 'brand-tigor' : 'brand-other', p.brand)}</span><span>Вага: ${f1(w)} кг</span></div><div class="col" style="gap:2px;align-items:flex-end;text-align:right"><span class="ok sm">✓ В наявності</span><b class="price xl">${uah(c)}</b></div></div>`
+        + (p.packs.length > 1 ? `<div class="col" style="gap:4px"><b class="sm">Фасування</b><div class="chips">${p.packs.map((x, k) => `<button class="chip ${k === p.sel ? 'on' : ''}" data-ocpack="${k}">${x[0]}</button>`).join('')}</div></div>` : '')
+        + `<div class="row btw">${qtyCtl('oc', q)}<span class="sm" id="oc-sum">Сума: <b>${uah(sum)}</b></span></div><div class="sm">Ваша знижка ${ph('3%')}: <b id="oc-disc">${uah(Math.round(sum * 0.97))}</b></div></div></div>`;
+    const ms = [['pickup', '🏬 Самовивіз', `ТЦ «Казка», ${ph('сьогодні')}`, 0], ['courier', '🚚 Доставка по Харкову', ph('зони й ціни — чекаємо дані'), 0], ['np', '📦 Нова пошта', heavy ? 'Тільки Харків: такий товар не відправляємо' : 'по Україні', heavy], ['up', '✉ Укрпошта', heavy ? 'Тільки Харків' : 'по Україні', heavy]];
+    return `<h3>${whole ? 'Швидке замовлення' : p.name + ', ' + lab}</h3>${head}
+      <div class="g2"><label class="field">Ваше ім'я<input id="oc-n" autocomplete="name"></label><label class="field">Телефон<input id="oc-t" inputmode="tel" autocomplete="tel" value="+38 0"></label></div>
+      <fieldset class="col" style="border:0;padding:0;margin:0;gap:4px"><legend class="sm b" style="margin-bottom:4px">Спосіб отримання</legend>${ms.map(([v, t, s, dis], k) => `<label class="row sm ${dis ? 'mut' : ''}" style="gap:6px;flex-wrap:nowrap"><input type="radio" name="oc-m" value="${v}" ${k ? '' : 'checked'} ${dis ? 'disabled' : ''}><span><b>${t}</b> · ${s}</span></label>`).join('')}</fieldset>
+      <p class="sm mut">Доставку оплачує покупець. Безкоштовної доставки немає.</p>
+      <button class="btn p w" ${DEMO ? 'data-oc' : 'data-go="success" data-close'}>Оформити замовлення</button>
+      <p class="mut" style="font-size:12px">Менеджер зателефонує, підтвердить наявність і вартість доставки. Телефон потрібен лише для зв'язку щодо цього замовлення. ${go('checkout', 'Повне оформлення')}</p>`;
+  },
   added: () => { const l = S.last ? S.last.e : S.cart[S.cart.length - 1], q = S.last ? S.last.qty : l.qty, p = PROD[l.id]; return `<h3>Додано до кошика</h3><div class="row btw sm"><span>${p.name}, ${p.packs[l.pack][0]}, ${q} шт.</span><b>${uah(p.packs[l.pack][2] * q)}</b></div><div class="sm">🏬 Самовивіз: сьогодні${X}</div><div class="sm">Вага замовлення: <b>${f1(cartWeight())} кг</b> · Разом: <b>${uah(cartSum())}</b></div><div class="col" ${DEMO && p.cat === 'x' ? 'hidden' : ''}><b class="sm">Для цієї роботи ще знадобиться</b>${[['tape', 'Стрічка малярська'], ['gs41', 'Штукатурка GS-41' + X]].map(([i, t]) => `<div class="row btw sm"><span>${t}</span><button class="btn l sm" data-add-q="${i}">Додати</button></div>`).join('')}</div><div class="mfoot"><div class="row" style="flex-wrap:nowrap"><button class="btn l w" data-close>Продовжити покупки</button><button class="btn p w" data-go="checkout" data-close>Оформити</button></div></div>`; },
   quote: () => `<h3>Прорахувати список</h3><p class="sm">Надішліть перелік або кошторис, повернемо готовий кошик із цінами.</p><label class="field">Телефон або Viber<input id="q-t" inputmode="tel" value="+38 0"></label><label class="field">Список товарів<textarea id="q-l" rows="3"></textarea></label><label class="field">Файл (необов'язково)<input id="q-f" type="file"></label><button class="btn p w" data-toast="Прототип: заявка не надсилається" data-close>Надіслати</button>`,
   notify: () => `<h3>Повідомити про надходження</h3><p class="sm">Напишемо, щойно товар з'явиться. Нічого більше не надсилаємо.</p><label class="field">Телефон або Viber<input id="n-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: не надсилається" data-close>Повідомити мене</button>`,
@@ -442,7 +472,7 @@ page({id: 'tracking', g: 'Покупка', name: 'Отслеживание за�
 
 page({id: 'oneclick', g: 'Покупка', name: 'Купить в 1 клик', pr: 'Запуск', url: 'окно на карточке и в списке',
   seo: {t: '—', h1: '—', ld: '—', idx: 'Не страница. Заказ попадает в контур с метками UTM'},
-  view: () => site(`<h1>Швидке замовлення</h1><p class="sm">Вікно відкривається в картці та в списку.</p>` + B(1, `<div class="bx col" style="max-width:420px">${MODALS.oneclick()}</div>`) + B(2, `<button class="btn" data-open="oneclick">Відкрити вікно</button>`)),
+  view: () => site(`<h1>Швидке замовлення</h1><p class="sm">Вікно відкривається з кнопки «1 клік» у списку, «Зарезервувати / порадитися» в картці та з кошика.</p>` + B(1, `<div class="bx col" style="max-width:420px">${MODALS.oneclick()}</div>`) + B(2, `<button class="btn" data-open="oneclick">Відкрити вікно</button>`)),
   notes: [],
   market: [], avoid: []});
 
@@ -878,11 +908,10 @@ function demoClick(t, d) {
   }
   if (d.oc !== undefined) {
     const tel = $('#oc-t')?.value; if (!telOk(tel)) { fieldErr('oc-t', 'Вкажіть телефон повністю'); return true; }
-    const q = Math.max(1, +$('#oc-q')?.value || 1), id = S.oc || S.pdp, whole = UI.cur === 'cart' && S.cart.length;
-    placeOrder(whole ? S.cart : [{id, pack: PROD[id].sel, qty: q}], 'call', tel, ''); if (whole) S.cart = []; closeModal(); open_('success'); return true;
+    const q = Math.max(1, +$('#q-oc')?.value || 1), id = S.oc || S.pdp, whole = UI.cur === 'cart' && S.cart.length;
+    placeOrder(whole ? S.cart : [{id, pack: PROD[id].sel, qty: q}], document.querySelector('input[name=oc-m]:checked')?.value || 'pickup', tel, $('#oc-n')?.value.trim() || ''); if (whole) S.cart = []; closeModal(); open_('success'); return true;
   }
   if (d.addkit !== undefined) { kitRows().forEach(([i, , n]) => { if (n) addCart(i, 0, n); }); open_('cart'); return true; }
-  if (d.pid) S.oc = d.pid;
   if (d.pf) { S.pf = d.pf; shell(); return true; }
   if (d.track !== undefined) { const n = $('#tr-n')?.value.trim(); if (!n) { fieldErr('tr-n', 'Вкажіть номер замовлення'); return true; } S.trk = n; shell(); return true; }
   if (d.lg !== undefined) {
@@ -960,7 +989,7 @@ function updateMix() {
 function modal(k) {
   closeModal(); const f = $('#frame'); if (!f || !MODALS[k]) return;
   const top = Math.max(12, scrollY - (f.getBoundingClientRect().top + scrollY) + 40);
-  const d = document.createElement('div'); d.className = 'drawer'; d.id = 'dr'; d.innerHTML = `<div class="dr-p ${k === 'menu' ? 'wide' : ''}" role="dialog" aria-modal="true" style="top:${top}px"><button class="dr-x" aria-label="Закрити" data-close>×</button>${MODALS[k]()}</div>`;
+  const d = document.createElement('div'); d.className = 'drawer'; d.id = 'dr'; d.innerHTML = `<div class="dr-p ${k === 'menu' ? 'wide' : k === 'oneclick' ? 'mid' : ''}" role="dialog" aria-modal="true" style="top:${top}px"><button class="dr-x" aria-label="Закрити" data-close>×</button>${MODALS[k]()}</div>`;
   $('#wf').appendChild(d); $('#wf').style.position = 'relative'; f.style.minHeight = (top + 520) + 'px'; d.querySelector('input,button.btn')?.focus?.();
 }
 function closeModal() { $('#dr')?.remove(); }
@@ -1019,10 +1048,11 @@ document.addEventListener('click', e => {
   if (d.addkit !== undefined) { addCart('gs41', 0, 27); addCart('tape', 0, 2); return open_('cart'); }
   if (d.addcalc !== undefined && S.best) { const p = PROD[S.best.id]; if (S.best.b) addCart(S.best.id, 2, S.best.b); if (S.best.m) addCart(S.best.id, 1, S.best.m); if (S.best.s) addCart(S.best.id, 0, S.best.s); return open_('cart'); }
   if (d.cq !== undefined) { const x = S.cart[+d.cq]; x.qty += +d.d; if (x.qty < 1) S.cart.splice(+d.cq, 1); return shell(); }
-  if (d.dq) { const box = t.closest('[data-qty]'), i = box.querySelector('input'); i.value = Math.max(1, (+i.value || 1) + +d.dq); const s = $('#pd-sum'); if (s && box.dataset.qty === 'pd') { const p = PROD[S.pdp], [, w, c] = p.packs[p.sel], q = +i.value; s.innerHTML = `Разом: <b>${uah(c * q)}</b> · ${f1(w * q)} кг`; } return; }
+  if (d.dq) { const box = t.closest('[data-qty]'), i = box.querySelector('input'); i.value = Math.max(1, (+i.value || 1) + +d.dq); const s = $('#pd-sum'); if (box.dataset.qty === 'oc') { S.ocq = +i.value; const p = PROD[PROD[S.oc] ? S.oc : (PROD[S.pdp] ? S.pdp : 'acr')], v = p.packs[p.sel][2] * S.ocq; $('#oc-sum').innerHTML = `Сума: <b>${uah(v)}</b>`; $('#oc-disc').textContent = uah(Math.round(v * 0.97)); return; } if (s && box.dataset.qty === 'pd') { const p = PROD[S.pdp], [, w, c] = p.packs[p.sel], q = +i.value; s.innerHTML = `Разом: <b>${uah(c * q)}</b> · ${f1(w * q)} кг`; } return; }
   if (d.chip !== undefined) { if (DEMO) t.parentElement.querySelectorAll('[data-chip]').forEach(c => { if (c !== t) c.classList.remove('on'); }); t.classList.toggle('on'); return; }
   if (d.scroll) { $('#' + d.scroll)?.scrollIntoView({block: 'center'}); return; }
-  if (d.open) return modal(d.open);
+  if (d.ocpack !== undefined) { const id = PROD[S.oc] ? S.oc : (PROD[S.pdp] ? S.pdp : 'acr'); S.ocq = +$('#q-oc')?.value || 1; PROD[id].sel = +d.ocpack; return modal('oneclick'); }
+  if (d.open) { if (d.open === 'oneclick') { S.oc = d.pid || (UI.cur === 'pdp' ? S.pdp : S.oc); S.ocq = +$('#q-' + (UI.cur === 'pdp' ? 'pd' : 'l' + S.oc))?.value || 1; } return modal(d.open); }
   if (d.toast) { toast(d.toast); if (d.close !== undefined) closeModal(); return; }
   if (d.go) { closeModal(); return open_(DEMO ? demoRoute(t, d) : d.go); }
   if (d.close !== undefined) return closeModal();
