@@ -208,9 +208,12 @@ button,input,select,textarea{font:inherit}
 .mfoot .row{align-items:stretch}
 @media (pointer:coarse){.wf .row.btw>a{padding-inline:8px}}
 
+/* дизайн у рамці (перемикач «Схема / Дизайн») */
+.dz-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:8px 12px;background:#f3f5ef;border-bottom:1px solid #dde2d4}.dz-frame{display:block;width:100%;height:calc(100vh - 150px);height:calc(100dvh - 150px);min-height:560px;border:0;background:#fff}.warn{color:#9a6700;font-weight:600;font-size:13px}
+
 #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));background:#1f2724;color:#fff;padding:8px 13px;border-radius:6px;font-size:14px;z-index:60;max-width:calc(100% - 32px)}
 </style>
-<div class="shell-top"><b>IM BAU · прототип</b><label class="sm">Страница: <select id="sel" aria-label="Страница"></select></label><span class="sp"></span><span class="seg" role="group" aria-label="Версия сайта"><button data-region="ua">Україна</button><button data-region="kharkiv">Харків</button></span><span class="seg demo-dev" role="group" aria-label="Устройство"><button data-dev="phone">Телефон</button><button data-dev="desk">ПК</button></span><span class="demo-note">Схема без дизайна. Товары и цены примерные, заказы никуда не отправляются.</span></div>
+<div class="shell-top"><b>IM BAU · прототип</b><label class="sm">Страница: <select id="sel" aria-label="Страница"></select></label><span class="sp"></span><span class="seg" role="group" aria-label="Версия сайта"><button data-region="ua">Україна</button><button data-region="kharkiv">Харків</button></span><span class="seg demo-dev" role="group" aria-label="Устройство"><button data-dev="phone">Телефон</button><button data-dev="desk">ПК</button></span><span class="seg" role="group" aria-label="Вид"><button data-vmode="schema">Схема</button><button data-vmode="design">Дизайн</button></span><span class="demo-note">Схема страниц. Готовый дизайн: переключатель «Дизайн». Товары и цены примерные, заказы никуда не отправляются.</span></div>
 <div class="shell demo"><nav id="nav" hidden></nav><main class="stage" id="stage"></main></div>
 <div id="toast" role="status" hidden></div>
 <script>
@@ -481,11 +484,6 @@ page({id: 'login', g: 'Кабинет', name: 'Вход и регистраци�
   notes: [],
   market: [], avoid: []});
 
-page({id: 'account', g: 'Кабинет', name: 'Личный кабинет', pr: 'Запуск', url: '/account',
-  seo: {t: 'Кабінет', h1: 'Мій кабінет', ld: '—', idx: 'noindex'},
-  view: () => site(`<h1>Мій кабінет</h1>` + B(1, `<div class="bx col"><b>Останні замовлення</b>${['12345 · Передано водію · 698 грн', '12210 · Отримано · 1 548 грн' + X].map(t => `<div class="row btw sm"><span>${t}</span><button class="btn l sm" data-toast="Прототип: товари додано до кошика">Повторити</button></div>`).join('')}</div>`) + `<div class="g3">` + B(2, `<div class="bx col"><b>Адреси об'єктів</b><span class="sm">Квартира, Холодна Гора${X}</span><span class="sm">Дача, Мерефа${X}</span><button class="btn l sm" data-toast="Прототип">Додати об'єкт</button></div>`) + B(3, `<div class="bx col"><b>Мій асортимент</b><span class="sm">Товари, які купуєте регулярно</span>${go('compare', 'Обране та порівняння')}</div>`) + B(4, `<div class="bx col"><b>Знижки</b><span class="sm">Ваша знижка: 3%. До 5% залишилось ${ph('1 200 грн')}</span>${go('loyalty', 'Умови')}</div>`) + `</div>`),
-  notes: [],
-  market: [], avoid: []});
 
 
 const brandPage = (id, b, sub, lines_, prods, front) => page({id, g: 'Бренды', name: `Страница ${b}: наш бренд`, pr: 'Запуск', key: front ? 1 : 0, url: `/brand/${b.toLowerCase()}`,
@@ -788,7 +786,224 @@ PAGES.forEach(p => { if (STATES[p.id]) p.st = STATES[p.id]; });
 
 const COVERAGE = [];
 
-const ORDER = ['home', 'catalog', 'hub', 'category', 'landing', 'pdp', 'kit', 'search', 'compare', 'brands', 'brand-front', 'brand-tigor', 'brand-other', 'stores', 'city', 'city-cat', 'tinting', 'evid', 'podbor', 'calc', 'cart', 'checkout', 'success', 'tracking', 'oneclick', 'login', 'account', 'delivery', 'returns', 'warranty', 'installments', 'loyalty', 'gift', 'promo', 'outlet', 'pro', 'pricelist', 'about', 'reviews', 'certs', 'faq', 'suppliers', 'jobs', 'blog', 'author', 'video', 'privacy', 'offer', 'errors', 'popups', 'sitemap'];
+const ORDER = ['home', 'catalog', 'hub', 'category', 'landing', 'pdp', 'kit', 'search', 'compare', 'brands', 'brand-front', 'brand-tigor', 'brand-other', 'stores', 'city', 'city-cat', 'tinting', 'evid', 'podbor', 'calc', 'cart', 'checkout', 'success', 'tracking', 'oneclick', 'login', 'account', 'account-segments', 'account-orders', 'account-order', 'account-requests', 'account-returns', 'account-card', 'account-lists', 'account-tints', 'account-addr', 'account-team', 'account-profile', 'account-b2b', 'delivery', 'returns', 'warranty', 'installments', 'loyalty', 'gift', 'promo', 'outlet', 'pro', 'pricelist', 'about', 'reviews', 'certs', 'faq', 'suppliers', 'jobs', 'blog', 'author', 'video', 'privacy', 'offer', 'errors', 'popups', 'sitemap', 'design'];
+PAGES.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
+
+
+const SEGS = {
+  self: {t: 'Для себе', who: 'Роблю ремонт для себе', how: 'За замовчуванням', price: 'Накопичувальна картка 3–10 %', menu: []},
+  master: {t: 'Майстер', who: 'Майстер', how: 'Сам обирає «Хто ви» або менеджер після 3 покупок матеріалів за місяць', price: 'Картка + ціна від обсягу (від 20–30 шт.)', menu: ['account-requests']},
+  brigade: {t: 'Бригада', who: 'Бригада', how: 'Сам обирає; підтверджує менеджер', price: 'Картка + ціна від обсягу; спільний кабінет бригади', menu: ['account-requests', 'account-team']},
+  company: {t: 'Компанія', who: 'Компанія', how: 'ЄДРПОУ або ІПН + підтвердження менеджера', price: 'Ціна під обсяг від менеджера, рахунок з ПДВ', menu: ['account-requests', 'account-b2b', 'account-team']},
+  shop: {t: 'Магазин', who: 'Магазин (перепродаж)', how: 'ЄДРПОУ або ІПН + договір', price: 'Оптовий прайс, мінімальна партія', menu: ['account-requests', 'account-b2b']},
+};
+const seg = () => SEGS[S.seg] ? S.seg : 'self';
+const isBiz = () => ['company', 'shop'].includes(seg());
+
+const TIERS = [[0, 3], [2000, 5], [7000, 7], [10000, 10]], SPENT = 2788;
+const tierAt = sum => { let k = 0; TIERS.forEach((t, i) => { if (sum >= t[0]) k = i; }); return k; };
+
+const CAB_ALL = [['account', 'Огляд'], ['account-orders', 'Мої замовлення'], ['account-requests', 'Мої заявки'], ['account-returns', 'Повернення'], ['account-card', 'Картка й сертифікати'], ['account-lists', 'Списки й обране'], ['account-tints', 'Мої відтінки'], ['account-addr', 'Адреси й отримувачі'], ['account-team', 'Бригада й співробітники'], ['account-b2b', 'Компанія й документи'], ['account-profile', 'Профіль і сповіщення']];
+const OPT = ['account-requests', 'account-team', 'account-b2b'];
+const cabMenu = () => CAB_ALL.filter(([id]) => !OPT.includes(id) || SEGS[seg()].menu.includes(id) || UI.cur === id).filter(([id]) => !(isBiz() && id === 'account-card'));
+const accNav = cur => cabMenu().map(([id, t]) => `<a href="#${id}" data-go="${id}"${id === cur || (cur === 'account-order' && id === 'account-orders') ? ' aria-current="page" class="b"' : ''}>${t}</a>`).join('') + `<a href="#login" data-go="login" data-lg="0" class="mut">Вийти</a>`;
+const segBadge = () => `<span class="chip on" style="min-height:0;padding:2px 8px">${SEGS[seg()].t}</span>`;
+const accLay = (cur, body) => `<div class="lay"><aside class="side"><nav class="bx col sm stick" style="gap:3px" aria-label="Кабінет"><b>Кабінет</b><span class="mut">${isBiz() ? 'ТОВ «Будмайстер»' : 'Олександр'} · +38 067 ••• 12 34${X}</span><span>${segBadge()}</span>${accNav(cur)}</nav></aside><div class="col" style="gap:14px;min-width:0"><details class="bx sm mobfilter"><summary class="b">Меню кабінету</summary><div class="col" style="gap:4px;margin-top:6px">${accNav(cur)}</div></details>${body}</div></div>`;
+const segSwitch = () => `<div class="bx sm row" style="border-style:dashed"><span class="mut">Прототип. Показати кабінет для:</span>${Object.entries(SEGS).map(([k, v]) => `<button class="chip${k === seg() ? ' on' : ''}" data-seg="${k}">${v.t}</button>`).join('')}</div>`;
+const cab = (cur, body) => site(accLay(cur, body));
+const ORD = [['12345', '23.11', 'Передано водію', 698, 'Доставка по Харкову', 'online'], ['12301', '20.11', 'Готове до видачі', 2140, `Самовивіз, ${STORE}`, 'online'], ['К-88412', '14.11', 'Куплено в магазині', 1548, 'Каса ТЦ «Казка»', 'store'], ['12210', '02.11', 'Отримано', 3920, 'Нова пошта', 'online']];
+const ordRow = ([n, d, s, sum, how, src]) => `<div class="row btw bx" style="padding:8px"><span class="sm"><b>${src === 'store' ? 'Чек' : 'Замовлення'} №${n}</b> · ${d}${X}<br><span class="mut">${how}</span></span><span class="sm ${s === 'Отримано' || s === 'Куплено в магазині' ? 'mut' : 'ok'}">${s}</span><b class="sm">${uah(sum)}</b><span class="row">${go('account-order', 'Деталі', 'btn l sm')}<button class="btn sm" data-toast="Прототип: товари додано до кошика з актуальними цінами">Повторити</button></span></div>`;
+const cardTile = () => { const k = tierAt(SPENT), nx = TIERS[k + 1]; return `<div class="bx col"><b>Накопичувальна картка</b><span class="price">${TIERS[k][1]} %</span><div class="bar"><i style="width:${nx ? Math.round(SPENT / nx[0] * 100) : 100}%"></i></div><span class="sm">${nx ? `До ${nx[1]} % залишилось ${uah(nx[0] - SPENT)} покупок` : 'Найвищий рівень'}</span>${go('account-card', 'Моя картка')}</div>`; };
+
+page({id: 'account', g: 'Кабинет', name: 'Кабинет: обзор', pr: 'Запуск', url: '/account',
+  seo: {t: 'Кабінет | IM BAU', h1: 'Мій кабінет', ld: '—', idx: 'noindex'},
+  view: () => { const s = seg();
+    return cab('account', segSwitch() + `<h1>${isBiz() ? 'ТОВ «Будмайстер»' : 'Вітаємо, Олександре'}${X}</h1>`
+    + B(1, `<div class="bx s col"><div class="row btw"><b>Активне замовлення №12345</b><span class="ok">Передано водію</span></div><div class="bar"><i style="width:75%"></i></div><div class="sm mut">Прийнято → Зібрано → Передано водію → Отримано</div><div class="row">${go('account-order', 'Деталі й дії', 'btn p sm')}<button class="btn l sm" data-toast="Прототип: дзвінок водію">Зателефонувати водію</button></div></div>`)
+    + `<div class="g3">` + B(2, isBiz() ? `<div class="bx col"><b>Умови компанії</b><span class="sm">${SEGS[s].price}</span><span class="sm">Менеджер: Анна${X}</span>${go('account-b2b', 'Компанія й документи')}</div>` : cardTile())
+    + B(3, s === 'self' ? `<div class="bx col"><b>Мої відтінки</b><span class="sm">Agave, NCS S 1002-B: 2 рецепти${X}</span>${go('account-tints', 'Докупити той самий відтінок')}</div>` : `<div class="bx col"><b>Мої заявки</b><span class="sm">Прорахунок списку: кошик готовий${X}</span><span class="sm">Колерування: у роботі${X}</span>${go('account-requests', 'Усі заявки')}</div>`)
+    + B(4, `<div class="bx col"><b>${s === 'brigade' || s === 'company' ? 'Бригада' : 'Списки під об’єкти'}</b>${s === 'brigade' || s === 'company' ? `<span class="sm">3 учасники, ліміт виконроба 20 000 грн/міс${X}</span>${go('account-team', 'Керувати')}` : `<span class="sm">Квартира, Холодна Гора: 14 товарів${X}</span><span class="sm">Чекаю надходження: 2${X}</span>${go('account-lists', 'Відкрити списки')}`}</div>`) + `</div>`
+    + (s === 'master' || s === 'brigade' ? B(5, `<div class="bx s row btw sm"><span><b>Ціна від обсягу.</b> На суміші й гіпсокартон нижча ціна діє автоматично від 20–30 шт. Ваш кошик: до порогу клею для плитки 4 мішки${X}.</span>${go('cart', 'До кошика', 'btn l sm')}</div>`) : '')
+    + B(6, `<div class="col"><div class="row btw"><h2>Останні покупки</h2>${go('account-orders', 'Усі замовлення')}</div>${ORD.slice(0, 3).map(ordRow).join('')}</div>`)
+    + (s === 'self' ? B(7, `<div class="bx row btw sm"><span>Ви майстер або купуєте для компанії? Оберіть, хто ви: з’являться ціна від обсягу, заявки на прорахунок, рахунок і документи.</span>${go('account-profile', 'Обрати, хто я', 'btn l sm')}</div>`) : '')); },
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-segments', g: 'Кабинет', name: 'Кабинет: сегменты клиентов', pr: 'Запуск', url: '— (правила, не страница)',
+  seo: {t: '—', h1: '—', ld: '—', idx: 'Не страница сайта'},
+  view: () => site(`<h1>Сегменти клієнтів</h1><p class="sm">Хто ви: той самий вибір, що у формі «Заявка на співпрацю». Від сегмента залежать меню кабінету, ціни й пропозиції.</p>`
+    + B(1, `<div class="tw"><table><tr><th>Сегмент</th><th>Як потрапляє</th><th>Ціни</th><th>Що додається в кабінеті</th></tr>${Object.entries(SEGS).map(([k, v]) => `<tr><td><button class="chip${k === seg() ? ' on' : ''}" data-seg="${k}">${v.t}</button></td><td class="sm">${v.how}</td><td class="sm">${v.price}</td><td class="sm">${v.menu.length ? v.menu.map(id => CAB_ALL.find(x => x[0] === id)[1]).join(', ') : 'Базовий кабінет'}</td></tr>`).join('')}</table></div>`)
+    + B(2, `<div class="bx col"><b>Де клієнт обирає сегмент</b><span class="sm">1. Після першого входу: «Хто ви?» одним натиском, можна пропустити.</span><span class="sm">2. У профілі кабінету в будь-який час.</span><span class="sm">3. У формі «Заявка на співпрацю» на сторінці ${go('pro', 'Майстрам і бригадам')}.</span><span class="sm">4. Менеджер змінює вручну в CRM після розмови.</span></div>`)
+    + B(3, `<div class="bx col"><b>Що змінюється</b><span class="sm">Меню кабінету й блоки огляду · ціна від обсягу на картках · рахунок і документи · теми розсилок · пропозиції в кошику</span><span class="mut">Сегмент передаємо в аналітику властивістю користувача customer_segment і в CRM як тег.</span></div>`)
+    + B(4, `<div class="row">${go('account', 'Подивитися кабінет обраного сегмента', 'btn p')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-orders', g: 'Кабинет', name: 'Кабинет: мои заказы', pr: 'Запуск', url: '/account/orders',
+  seo: {t: 'Мої замовлення', h1: 'Мої замовлення', ld: '—', idx: 'noindex'},
+  view: () => cab('account-orders', `<h1>Мої замовлення</h1>`
+    + B(1, `<div class="chips">${['Усі', 'Активні', 'На сайті', 'У магазині', 'Скасовані'].map((t, k) => `<button class="chip${k ? '' : ' on'}" data-chip="${k}">${t}</button>`).join('')}</div><div class="g2" style="margin-top:8px"><label class="field">Пошук за номером або товаром<input placeholder="Наприклад, 12345 або ґрунтовка"></label><label class="field">Період<select><option>За 3 місяці</option><option>За рік</option><option>Увесь час</option></select></label></div>`)
+    + B(2, `<div class="col">${ORD.map(ordRow).join('')}</div>`)
+    + B(3, `<div class="bx s sm">Покупки в магазині підтягуються за номером телефону, який ви назвали на касі. Немає чека? ${go('account-card', 'Додати чек до картки')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-order', g: 'Кабинет', name: 'Кабинет: карточка заказа', pr: 'Запуск', url: '/account/orders/12345',
+  seo: {t: 'Замовлення №12345', h1: 'Замовлення №12345', ld: '—', idx: 'noindex'},
+  view: () => cab('account-order', `<div class="sm">${go('account-orders', '← Мої замовлення')}</div><div class="row btw"><h1>Замовлення №12345</h1><span class="ok">Передано водію</span></div>`
+    + B(1, `<div class="bx col"><div class="bar"><i style="width:75%"></i></div><div class="g4 sm"><span><b>Прийнято</b><br>23.11, 10:12</span><span><b>Зібрано</b><br>23.11, 11:40</span><span><b>Передано водію</b><br>23.11, 13:05</span><span class="mut"><b>Отримано</b><br>очікується до 18:00</span></div><div class="sm">Доставка по Харкову, вул. Полтавський Шлях, 150, кв. 12, 7 поверх, ліфт є${X}. Отримувач: Ігор, +38 050 ••• 45 67${X}</div></div>`)
+    + B(2, `<div class="col"><b>Що можна змінити</b><div class="row"><button class="btn l sm" data-toast="Прототип: вибір іншої дати й часу">Змінити дату доставки</button><button class="btn l sm" data-toast="Прототип: інший отримувач і телефон">Змінити отримувача</button><button class="btn l sm" data-toast="Прототип: резерв продовжено ще на 3 дні">Продовжити резерв</button><button class="btn l sm" data-toast="Прототип: заявку на скасування надіслано менеджеру">Скасувати</button></div><span class="mut">Кнопки показуємо лише там, де дія ще можлива: після передачі водію змінити склад не можна. Резерв самовивозу — 3 дні, як на сторінці для майстрів.</span></div>`)
+    + B(3, `<div class="col">${[['Фарба інтер’єрна FRONT, 7 кг', 'Відтінок Agave, NCS S 1002-B', 2, 1256], ['Ґрунтовка TIGOR, 5 л', '', 1, 340]].map(([t, sh, q, s]) => `<div class="row btw bx" style="padding:8px"><div style="width:52px;flex:none">${img('', '1/1')}</div><span class="sm" style="flex:1"><b>${t}</b>${X}<br><span class="mut">${q} шт.${sh ? ' · ' + sh : ''}</span></span><b class="sm">${uah(s)}</b><button class="btn l sm" data-toast="Прототип: відкриється форма відгуку">Відгук</button></div>`).join('')}<div class="row btw sm"><span>Знижка за карткою, 5 %</span><b>−${uah(80)}</b></div><div class="row btw"><b>Разом</b><b class="price">${uah(1516)}</b></div></div>`)
+    + B(4, `<div class="g2"><div class="bx col"><b>Документи</b>${['Електронний чек', 'Видаткова накладна', 'Рахунок на оплату', 'Гарантійний талон'].map(t => `<a href="#account-order" data-toast="Прототип: файл PDF">${t} · PDF</a>`).join('')}</div><div class="bx col"><b>Сертифікати й техлисти</b><span class="sm">На товари з цього замовлення</span>${go('certs', 'Сертифікати якості')}</div></div>`)
+    + B(5, `<div class="row"><button class="btn p" data-toast="Прототип: товари додано до кошика">Повторити замовлення</button>${go('account-returns', 'Повернути товар', 'btn l')}<button class="btn l" data-open="callback">Питання щодо замовлення</button></div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-requests', g: 'Кабинет', name: 'Кабинет: мои заявки', pr: 'Запуск', url: '/account/requests',
+  seo: {t: 'Мої заявки', h1: 'Мої заявки', ld: '—', idx: 'noindex'},
+  view: () => cab('account-requests', `<h1>Мої заявки</h1>`
+    + B(1, `<div class="col">${[['Прорахунок списку', 'Штукатурка на 2 кімнати, фото списку', 'Кошик готовий', 'Відкрити кошик', 'cart'], ['Колерування', 'Agave, NCS S 1002-B, 10 л', 'У роботі: готово за 15 хв', '', ''], ['Співпраця', 'Майстер, Холодна Гора', 'Менеджер зателефонує сьогодні', '', ''], ['Зворотний дзвінок', 'Питання щодо замовлення №12301', 'Виконано', '', '']].map(([a, b, c, d, g]) => `<div class="row btw bx" style="padding:8px"><span class="sm"><b>${a}</b>${X}<br><span class="mut">${b}</span></span><span class="sm ${c === 'Виконано' ? 'mut' : 'ok'}">${c}</span>${d ? go(g, d, 'btn p sm') : '<span></span>'}</div>`).join('')}</div>`)
+    + B(2, `<div class="row"><button class="btn l" data-open="quote">Надіслати новий список</button>${go('tinting', 'Заявка на колерування', 'btn l')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-returns', g: 'Кабинет', name: 'Кабинет: возвраты', pr: 'Запуск', url: '/account/returns',
+  seo: {t: 'Повернення', h1: 'Повернення й обмін', ld: '—', idx: 'noindex'},
+  view: () => cab('account-returns', `<h1>Повернення й обмін</h1>`
+    + B(1, `<div class="bx col"><b>Крок 1. Оберіть товари із замовлення №12210</b>${[['Клей для плитки, 25 кг', 3], ['Шпатель 250 мм', 1]].map(([t, q]) => `<label class="row sm"><input type="checkbox"> ${t}${X} <span class="mut">куплено ${q} шт.</span><select style="width:auto"><option>1</option><option>2</option><option>3</option></select></label>`).join('')}<label class="field">Причина<select><option>Залишок після ремонту</option><option>Не підійшов</option><option>Брак або пошкодження</option><option>Привезли не те</option></select></label></div>`)
+    + B(2, `<div class="bx col"><b>Крок 2. Як повернути</b><label class="radio"><input type="radio" name="rt" checked><span>Принести в магазин, ${STORE}</span></label><label class="radio"><input type="radio" name="rt"><span>Нова пошта за наш рахунок, якщо брак</span></label><label class="field">Фото, якщо брак<input type="file"></label><div class="sm mut">Гроші повертаємо тим самим способом, яким ви платили. Строк залежить від способу оплати${X}.</div><button class="btn p" data-toast="Прототип: заявку №П-104 створено">Створити заявку</button></div>`)
+    + B(3, `<div class="col"><b>Мої заявки на повернення</b><div class="row btw bx sm" style="padding:8px"><span><b>П-098</b> · Валик малярний${X}</span><span class="ok">Гроші повернено</span><span>14.11</span></div></div>`)
+    + B(4, `<div class="sm mut">Що не повертаємо: фарбу після колерування, товари на метраж. ${go('returns', 'Умови повернення')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-card', g: 'Кабинет', name: 'Кабинет: накопительная карта', pr: 'Запуск', url: '/account/card',
+  seo: {t: 'Накопичувальна картка', h1: 'Накопичувальна картка', ld: '—', idx: 'noindex'},
+  view: () => { const k = tierAt(SPENT), nx = TIERS[k + 1], sel = S.lvl === undefined ? k : S.lvl, pct = TIERS[sel][1], base = 628, my = Math.round(base * (100 - pct) / 100);
+    return cab('account-card', `<h1>Накопичувальна картка</h1>`
+    + B(1, `<div class="g2"><div class="bx s col"><span class="mut">IMBAU · картка клієнта</span><span class="price xl">${TIERS[k][1]} %</span><span class="sm">+38 067 ••• 12 34${X}</span><div style="height:64px">${img('Штрих-код для каси', '5/1')}</div><button class="btn l sm" data-toast="Прототип: картку додано в Google Wallet / Apple Wallet">Додати в гаманець телефону</button></div><div class="bx col"><b>Накопичено ${uah(SPENT)}</b><div class="bar"><i style="width:${nx ? Math.round(SPENT / nx[0] * 100) : 100}%"></i></div><span class="sm">${nx ? `До ${nx[1]} % залишилось ${uah(nx[0] - SPENT)} покупок` : 'У вас найвищий рівень'}</span><span class="mut">Рахуємо разом покупки в магазині й на сайті за номером телефону. Ціни на сайті вже з вашою знижкою: звичайна перекреслена.</span></div></div>`)
+    + B(2, `<div class="col"><b>Рівні</b><div class="g4">${TIERS.map(([from, p], i) => `<button class="bx col${i === sel ? ' s' : ''}" style="text-align:left;cursor:pointer${i === k ? ';border:2px solid var(--i)' : ''}" data-lvl="${i}"><span class="price">${p} %</span><span class="sm">${from ? `від ${uah(from)}` : 'за реєстрацію'}</span>${i === k ? '<span class="ok">ваш рівень</span>' : ''}</button>`).join('')}</div><div class="row btw bx" style="padding:8px"><div style="width:52px;flex:none">${img('', '1/1')}</div><span class="sm" style="flex:1"><span class="mut">Наприклад</span><br><b>Фарба водоемульсійна акрилова інтер’єрна Front, 7 кг</b></span><span class="col" style="align-items:flex-end;gap:2px"><s class="mut">${uah(base)}</s><b class="price">${uah(my)}</b><span class="ok">−${pct} %, економія ${uah(base - my)}</span></span></div><span class="mut">Натисніть на рівень, щоб побачити ціну з ним.</span></div>`)
+    + B(3, `<div class="bx col"><b>Покупка в магазині без картки?</b><span class="sm">Назвіть номер телефону на касі. Якщо забули: додайте чек протягом ${ph('14 днів')}.</span><div class="g2"><label class="field">Номер чека<input placeholder="К-88412"></label><label class="field">Дата<input placeholder="14.11.2026"></label></div><button class="btn l sm" data-toast="Прототип: чек додано, накопичення оновлено">Додати чек</button></div>`)
+    + `<div class="g2">` + B(4, `<div class="bx col"><b>Подарункові сертифікати</b><span class="sm">Сертифікат №GC-2041: залишок ${uah(500)}${X}</span><label class="field">Додати сертифікат<input placeholder="Код із сертифіката"></label><button class="btn l sm" data-toast="Прототип: сертифікат додано">Додати</button>${go('gift', 'Купити сертифікат')}</div>`)
+    + B(5, `<div class="bx col"><b>Промокоди й персональні пропозиції</b><span class="sm">Знижка на ґрунтовки TIGOR до ${ph('30.11')}${X}</span><span class="sm">Промокод REMONT5: −5 % на інструмент${X}</span>${go('promo', 'Усі акції')}</div>`) + `</div>`
+    + B(6, `<div class="sm mut">${go('loyalty', 'Умови картки')}</div>`)); },
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-lists', g: 'Кабинет', name: 'Кабинет: списки и избранное', pr: 'Запуск', url: '/account/lists',
+  seo: {t: 'Списки й обране', h1: 'Списки й обране', ld: '—', idx: 'noindex'},
+  view: () => cab('account-lists', `<h1>Списки й обране</h1>`
+    + B(1, `<div class="chips">${['Обране · 9', 'Квартира, Холодна Гора · 14', 'Дача · 6', 'Чекаю надходження · 2', 'Порівняння · 3', 'Переглянуті · 8'].map((t, k) => `<button class="chip${k === 1 ? ' on' : ''}" data-chip="${k}">${t}</button>`).join('')}<button class="chip" data-toast="Прототип: новий список">+ Новий список</button></div>`)
+    + B(2, `<div class="col">${[['Штукатурка гіпсова, 30 кг', 'Є в магазині · від 20 шт. 245 грн', 12, 289], ['Сітка малярна', 'Під замовлення, 2 дні', 3, 145], ['Фарба FRONT, 7 кг', 'Ціна знизилась', 2, 628]].map(([t, s, q, p]) => `<div class="row btw bx" style="padding:8px"><div style="width:52px;flex:none">${img('', '1/1')}</div><span class="sm" style="flex:1"><b>${t}</b>${X}<br><span class="${s === 'Ціна знизилась' ? 'ok' : 'mut'}">${s}</span></span><span class="qty"><button aria-label="Менше">−</button><span style="padding:0 7px">${q}</span><button aria-label="Більше">+</button></span><b class="sm">${uah(p * q)}</b></div>`).join('')}<div class="row btw"><b>Разом за списком</b><b class="price">${uah(289 * 12 + 145 * 3 + 628 * 2)}</b></div></div>`)
+    + B(3, `<div class="row"><button class="btn p" data-toast="Прототип: увесь список у кошику">Усе до кошика</button><button class="btn l" data-toast="Прототип: посилання скопійовано">Поділитися списком</button><button class="btn l" data-toast="Прототип: PDF для бригади">Завантажити PDF</button><button class="btn l" data-open="quote">Прорахувати з менеджером</button></div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-tints', g: 'Кабинет', name: 'Кабинет: мои оттенки', pr: 'Запуск', url: '/account/tints',
+  seo: {t: 'Мої відтінки', h1: 'Мої відтінки', ld: '—', idx: 'noindex'},
+  view: () => cab('account-tints', `<h1>Мої відтінки</h1><p class="sm">Рецепти колерування зберігаються за номером телефону: докупите той самий відтінок для наступної кімнати чи об’єкта.</p>`
+    + B(1, `<div class="g2">${[['#C3CFB3', 'Agave', 'NCS S 1002-B', 'Фарба інтер’єрна FRONT, 7 кг', '14.11 · магазин'], ['#E8DCC8', 'Пісочний', 'RAL 1015', 'Фарба фасадна FRONT, 10 л', '02.11 · сайт']].map(([c, n, code, prod, when]) => `<div class="bx col"><div class="row"><span style="width:56px;height:56px;border-radius:6px;background:${c};flex:none"></span><span class="sm"><b>${n}</b>${X}<br>${code}<br><span class="mut">${prod}</span></span></div><span class="mut">Рецепт від ${when}. Кімната: спальня${X}</span><div class="row"><button class="btn p sm" data-toast="Прототип: той самий рецепт у кошику">Замовити ще</button>${go('tinting', 'Приміряти на фото', 'btn l sm')}</div></div>`).join('')}</div>`)
+    + B(2, `<div class="bx s sm">Колір у тому самому рецепті може трохи відрізнятися між партіями фарби. Для однієї стіни беріть увесь об’єм одразу.</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-addr', g: 'Кабинет', name: 'Кабинет: адреса и получатели', pr: 'Запуск', url: '/account/addresses',
+  seo: {t: 'Адреси й отримувачі', h1: 'Адреси й отримувачі', ld: '—', idx: 'noindex'},
+  view: () => cab('account-addr', `<h1>Адреси й отримувачі</h1>`
+    + `<div class="g2">` + B(1, `<div class="bx col"><div class="row btw"><b>Квартира, Холодна Гора</b><span class="chip on">Основна</span></div><span class="sm">вул. Полтавський Шлях, 150, кв. 12${X}</span><span class="sm mut">7 поверх, ліфт є · в’їзд для вантажівки: так · заносимо: так</span><div class="row"><button class="btn l sm" data-toast="Прототип">Змінити</button><button class="btn l sm" data-toast="Прототип">Видалити</button></div></div>`)
+    + B(2, `<div class="bx col"><b>Дача, Мерефа</b><span class="sm">вул. Дачна, 7${X}</span><span class="sm mut">Приватний будинок · лише наша машина по області</span><div class="row"><button class="btn l sm" data-toast="Прототип">Змінити</button></div></div>`) + `</div>`
+    + B(3, `<div class="bx col"><b>Нова пошта</b><span class="sm">Відділення №12, Харків${X}</span><button class="btn l sm" data-toast="Прототип">Додати відділення або поштомат</button></div>`)
+    + B(4, `<div class="bx col"><b>Хто приймає</b><span class="sm">Ігор, виконроб · +38 050 ••• 45 67${X}</span><button class="btn l sm" data-toast="Прототип">Додати отримувача</button><span class="mut">Отримувач бачить лише статус свого замовлення, ціни й кабінет йому не видно.</span></div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-team', g: 'Кабинет', name: 'Кабинет: бригада и сотрудники', pr: 'Развитие', url: '/account/team',
+  seo: {t: 'Бригада', h1: 'Бригада й співробітники', ld: '—', idx: 'noindex'},
+  view: () => cab('account-team', `<h1>Бригада й співробітники</h1><p class="sm">Один кабінет на кількох людей: спільні списки, адреси й картка, кожен зі своїм телефоном.</p>`
+    + B(1, `<div class="col">${[['Олександр', 'Власник', 'Усе, включно з оплатою'], ['Ігор, виконроб', 'Замовляє', 'Ліміт 20 000 грн/міс, без оплати карткою'], ['Олена, бухгалтер', 'Документи', 'Лише рахунки й накладні']].map(([a, b, c]) => `<div class="row btw bx" style="padding:8px"><span class="sm"><b>${a}</b>${X}<br><span class="mut">${c}</span></span><select style="width:auto"><option>${b}</option><option>Замовляє</option><option>Документи</option></select></div>`).join('')}</div>`)
+    + B(2, `<div class="bx col"><label class="field">Запросити за номером телефону<input value="+38 0"></label><button class="btn p sm" data-toast="Прототип: запрошення надіслано у Viber">Запросити</button><span class="mut">Покупки всіх учасників ідуть на одну картку, тож рівень знижки росте швидше.</span></div>`)
+    + B(3, `<div class="bx s sm">Замовлення понад ліміт виконроба приходить власнику на підтвердження.</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-profile', g: 'Кабинет', name: 'Кабинет: профиль и уведомления', pr: 'Запуск', url: '/account/profile',
+  seo: {t: 'Профіль', h1: 'Профіль і сповіщення', ld: '—', idx: 'noindex'},
+  view: () => cab('account-profile', `<h1>Профіль і сповіщення</h1>`
+    + B(1, `<div class="bx col"><div class="g2"><label class="field">Ім’я<input value="Олександр"></label><label class="field">Email для документів<input placeholder="name@gmail.com"></label></div><div class="row btw sm"><span>Телефон: +38 067 ••• 12 34${X}</span><button class="btn l sm" data-toast="Прототип: код на новий номер">Змінити номер</button></div><span class="mut">Новий номер підтверджуємо кодом. Картка й історія переходять на нього.</span></div>`)
+    + B(2, `<div class="bx col"><b>Хто ви</b><div class="row">${Object.entries(SEGS).map(([k, v]) => `<button class="chip${k === seg() ? ' on' : ''}" data-seg="${k}">${v.t}</button>`).join('')}</div><span class="mut">${SEGS[seg()].price}. ${isBiz() ? 'Потрібен код ЄДРПОУ або ІПН: ' + go('account-b2b', 'додати компанію') : ''}</span></div>`)
+    + B(3, `<div class="bx col"><b>Куди надсилати</b><div class="row">${['Viber', 'Telegram', 'SMS', 'Email'].map((t, k) => `<button class="chip${k < 1 ? ' on' : ''}" data-chip="${k}">${t}</button>`).join('')}</div><b>Про що</b>${['Статус замовлення й водій', 'Відповідь на заявку (прорахунок, колерування)', 'Товар з обраного з’явився в наявності', 'Знизилась ціна в моїх списках', 'Акції й персональні пропозиції'].map((t, k) => `<label class="row sm"><input type="checkbox"${k < 3 ? ' checked' : ''}> ${t}</label>`).join('')}</div>`)
+    + B(4, `<div class="row sm"><button class="btn l sm" data-toast="Прототип">Вийти на всіх пристроях</button><button class="btn l sm" data-toast="Прототип: запит на видалення">Видалити кабінет</button>${go('privacy', 'Як ми зберігаємо дані')}</div>`)),
+  notes: [],
+  market: [], avoid: []});
+
+page({id: 'account-b2b', g: 'Кабинет', name: 'Кабинет: компания и документы', pr: 'Развитие', url: '/account/business',
+  seo: {t: 'Компанія й документи', h1: 'Компанія й документи', ld: '—', idx: 'noindex'},
+  view: () => cab('account-b2b', `<h1>Компанія й документи</h1><p class="sm">Купуйте на ФОП або компанію: рахунок на оплату, видаткові накладні й персональний менеджер.</p>`
+    + B(1, `<div class="bx col"><b>Додати компанію</b><div class="g2"><label class="field">Код ЄДРПОУ або ІПН<input inputmode="numeric" placeholder="12345678"></label><span class="sm mut" style="align-self:end">Назву, адресу й платника ПДВ підтягнемо з реєстру${X}</span></div><button class="btn p sm" data-toast="Прототип: ТОВ «Будмайстер» знайдено в реєстрі">Знайти компанію</button></div>`)
+    + `<div class="g3">` + B(2, `<div class="bx col"><b>Рахунок на оплату</b><span class="sm">Оформіть кошик як рахунок: оплата з рахунку компанії, ціна з ПДВ${X}</span>${go('cart', 'До кошика')}${go('pricelist', 'Прайс-лист файлом')}</div>`)
+    + B(3, `<div class="bx col"><b>Документи</b>${['Рахунки', 'Видаткові накладні', 'Акти звірки', 'ТТН', 'Сертифікати на товар'].map(t => `<a href="#account-b2b" data-toast="Прототип: список документів">${t}</a>`).join('')}<span class="mut">Підпис через ${ph('Вчасно')} і КЕП</span></div>`)
+    + B(4, `<div class="bx col"><b>Персональний менеджер</b><span class="sm">Анна, +38 098 ••• 30 30${X}</span><button class="btn l sm" data-toast="Прототип: перехід у Viber">Написати у Viber</button></div>`) + `</div>`),
+  notes: [],
+  market: [], avoid: []});
+
+const DESIGN_BASE = 'https://ivanlopatko.github.io/Imbau/';
+const DESIGN = {home: 'index.html', catalog: 'catalog.html', hub: 'section.html?s=sukhi-sumishi', category: 'category.html?sub=Фарби+інтер’єрні', landing: 'category.html?sub=Штукатурки&brand=TIGOR', pdp: 'product.html?id=acr', kit: 'kit.html?t=Для+штукатурки', search: 'search.html?q=краска', compare: 'compare.html', brands: 'brands.html', 'brand-front': 'brand.html?b=front', 'brand-tigor': 'brand.html?b=tigor', stores: 'stores.html', tinting: 'tinting.html', evid: 'evidnovlennya.html', podbor: 'podbor.html', calc: 'podbor.html', cart: 'cart.html', checkout: 'checkout.html', success: 'success.html', tracking: 'tracking.html?o=IMB-100001', login: 'account.html', account: 'account.html', 'account-orders': 'account.html', 'account-card': 'info.html?p=discounts', 'account-addr': 'account.html', 'account-profile': 'account.html', 'account-lists': 'compare.html?tab=fav', 'account-tints': 'tinting.html', 'account-segments': 'pro.html', delivery: 'delivery.html', returns: 'info.html?p=return', warranty: 'info.html?p=warranty', loyalty: 'info.html?p=discounts', gift: 'certificate.html', promo: 'promo.html', outlet: 'product.html?id=tc16', pro: 'pro.html', pricelist: 'info.html?p=price', about: 'info.html?p=about', reviews: 'info.html?p=reviews', certs: 'info.html?p=certs', faq: 'info.html?p=faq', suppliers: 'suppliers.html', jobs: 'info.html?p=jobs', blog: 'blog.html', privacy: 'info.html?p=privacy', offer: 'info.html?p=offer', errors: '404.html', popups: 'ui-kit.html'};
+const DESIGN_PART = {account: 'є вкладки замовлень, адрес, картки й профілю; немає огляду з активним замовленням і блоків за сегментом', 'account-orders': 'список є; немає фільтрів, пошуку й покупок у магазині', 'account-card': 'сходинки рівнів і приклад ціни є на сторінці умов; у кабінеті немає штрих-коду, чека, сертифікатів і промокодів', 'account-addr': 'адреса є; немає поштових відділень і отримувачів', 'account-profile': 'лише ім’я й вихід; немає «Хто ви», зміни номера й сповіщень', 'account-lists': 'є лише «Обране» у порівнянні; немає списків під об’єкти', 'account-tints': 'примірка є; історії рецептів у кабінеті немає', 'account-segments': 'вибір «Хто ви» є лише у формі співпраці', outlet: 'є лише картка товару з уцінкою, немає сторінки розділу', calc: 'калькулятор усередині підбору, окремої сторінки немає', landing: 'посадкова фільтра намальована як категорія з брендом'};
+const NEW_23 = ['account', 'account-segments', 'account-orders', 'account-order', 'account-requests', 'account-returns', 'account-card', 'account-lists', 'account-tints', 'account-addr', 'account-team', 'account-profile', 'account-b2b'];
+const designState = id => DESIGN[id] ? (DESIGN_PART[id] ? 'part' : 'ok') : 'no';
+const DST = {ok: ['Готово', 'ok'], part: ['Частково', 'warn'], no: ['Немає дизайну', 'no']};
+const designFrame = p => DESIGN[p.id]
+  ? `<div class="dz-bar sm"><span>Дизайн: <b>${p.name}</b>${DESIGN_PART[p.id] ? ` · частково: ${DESIGN_PART[p.id]}` : ''}</span><a href="${DESIGN_BASE + DESIGN[p.id]}" target="_blank" rel="noopener">Відкрити в новій вкладці ↗</a></div><iframe class="dz-frame" src="${DESIGN_BASE + encodeURI(DESIGN[p.id])}" title="Дизайн: ${p.name}" loading="lazy"></iframe>`
+  : `<div class="wf" style="padding:24px"><h1>Цю сторінку ще не намальовано</h1><p class="sm">Схема є: перемкніть «Схема». Що потрібно намалювати, дивіться на сторінці ${go('design', 'Для дизайнера')}.</p></div>`;
+
+const DZ_TODO = [
+  ['account', 'Огляд кабінету', 'привітання; картка активного замовлення зі шкалою й кнопками «Деталі», «Зателефонувати водію»; три плитки, які залежать від сегмента (накопичувальна картка з прогресом або умови компанії; мої відтінки або мої заявки; списки під об’єкти або бригада); банер «Ціна від обсягу» для майстра й бригади; останні покупки; запрошення «Оберіть, хто ви» для роздрібного покупця'],
+  ['account-segments', 'Сегменти клієнтів', 'не окрема сторінка сайту, а правила: «Хто ви» (Для себе, Майстер, Бригада, Компанія, Магазин) — після першого входу одним екраном, у профілі й у формі співпраці. Намалювати екран вибору після входу й позначку сегмента в меню кабінету'],
+  ['account-orders', 'Мої замовлення', 'фільтри-чипи «Усі / Активні / На сайті / У магазині / Скасовані», пошук за номером або товаром, період; рядок = номер, дата, спосіб отримання, статус, сума, «Деталі», «Повторити»; покупка на касі виглядає як «Чек №…»'],
+  ['account-order', 'Картка замовлення', 'шкала статусу з часом кожного кроку; адреса й отримувач; дії «Змінити дату», «Змінити отримувача», «Продовжити резерв», «Скасувати» (видно лише поки можна); склад із відтінком і кнопкою «Відгук»; знижка й разом; документи PDF; сертифікати; «Повторити», «Повернути товар», «Питання щодо замовлення»'],
+  ['account-requests', 'Мої заявки', 'усі заявки з форм сайту (прорахунок списку, колерування, співпраця, дзвінок) зі статусом; у готового прорахунку кнопка «Відкрити кошик»; «Надіслати новий список»'],
+  ['account-returns', 'Повернення й обмін', 'крок 1: товари й кількість із замовлення + причина; крок 2: спосіб (магазин / Нова пошта при браку), фото, строк грошей; список заявок зі статусами; що не повертаємо'],
+  ['account-card', 'Накопичувальна картка', 'картка з рівнем, номером і штрих-кодом для каси, «Додати в гаманець телефону»; прогрес до наступного рівня; сходинки 3/5/7/10 % із прикладом ціни (як на сторінці умов, але з позначкою «ваш рівень»); «Додати чек»; подарункові сертифікати із залишком і полем коду; промокоди й персональні пропозиції'],
+  ['account-lists', 'Списки й обране', 'чипи: Обране, списки під об’єкти, «Чекаю надходження», Порівняння, Переглянуті, «+ Новий список»; рядок з кількістю, наявністю, ступенькою «від 20 шт.» і позначкою «Ціна знизилась»; сума списку; «Усе до кошика», «Поділитися», «PDF», «Прорахувати з менеджером»'],
+  ['account-tints', 'Мої відтінки', 'картки рецептів: колір, назва, код NCS/RAL, товар, дата й де колерували; «Замовити ще», «Приміряти на фото»; попередження про різницю партій'],
+  ['account-addr', 'Адреси й отримувачі', 'адреса об’єкта з поверхом, ліфтом, в’їздом для вантажівки, заносом і позначкою «Основна»; відділення Нової пошти окремо; «Хто приймає» — отримувачі на об’єкті'],
+  ['account-team', 'Бригада й співробітники', 'етап розвитку: учасники з ролями (Власник / Замовляє / Документи) і лімітом, запрошення за телефоном, підтвердження замовлення понад ліміт'],
+  ['account-profile', 'Профіль і сповіщення', 'ім’я, email для документів, зміна номера з кодом; «Хто ви» чипами; канали (Viber, Telegram, SMS, Email) і теми сповіщень галочками; вийти на всіх пристроях, видалити кабінет'],
+  ['account-b2b', 'Компанія й документи', 'етап розвитку: додати компанію за ЄДРПОУ; рахунок на оплату й прайс-лист; документи (рахунки, видаткові, акти звірки, ТТН, сертифікати); персональний менеджер'],
+];
+
+page({id: 'design', g: 'Служебные', name: 'Для дизайнера: статус и новое', pr: 'Запуск', url: '— (служебная)',
+  seo: {t: '—', h1: '—', ld: '—', idx: 'Не страница сайта'},
+  view: () => {
+    const rows = PAGES.filter(p => p.id !== 'design');
+    const cnt = s => rows.filter(p => designState(p.id) === s).length;
+    const tbl = list => `<div class="tw"><table><tr><th>Сторінка схеми</th><th>Стан</th><th>Дизайн</th></tr>${list.map(p => { const s = designState(p.id); return `<tr><td>${go(p.id, p.name)}${NEW_23.includes(p.id) ? ' <span class="chip on" style="min-height:0;padding:1px 7px">нове 23.11</span>' : ''}</td><td class="${DST[s][1]}">${DST[s][0]}${DESIGN_PART[p.id] ? `<br><span class="mut">${DESIGN_PART[p.id]}</span>` : ''}</td><td>${DESIGN[p.id] ? `<a href="${DESIGN_BASE + DESIGN[p.id]}" target="_blank" rel="noopener">${DESIGN[p.id].split('?')[0]} ↗</a>` : '—'}</td></tr>`; }).join('')}</table></div>`;
+    return wrap(`<div class="col" style="gap:16px;padding:16px 0">
+      <h1>Для дизайнера</h1>
+      <p class="sm">Схема (цей прототип) показує, <b>які блоки й стани</b> має кожна сторінка. Дизайн (<a href="${DESIGN_BASE}" target="_blank" rel="noopener">ivanlopatko.github.io/Imbau</a>) показує, <b>як вони виглядають</b>. Угорі перемикач <b>«Схема / Дизайн»</b>: на будь-якій сторінці видно готовий дизайн поруч зі схемою.</p>
+      <div class="g3"><div class="bx col"><span class="mut">Готово</span><span class="price">${cnt('ok')}</span></div><div class="bx col"><span class="mut">Частково</span><span class="price">${cnt('part')}</span></div><div class="bx col"><span class="mut">Немає дизайну</span><span class="price">${cnt('no')}</span></div></div>
+      <h2>Нове 23.11.2026: кабінет клієнта</h2>
+      <p class="sm">Основа: аналіз кабінету Епіцентру (особистий і «Епіцентр Бізнес») і те, що вже є в дизайні: накопичувальна картка 3/5/7/10 %, вибір «Хто ви» у формі співпраці, рецепт колерування за телефоном, подарункові сертифікати, «Повідомити про надходження», ціна від обсягу. Зараз у дизайні кабінет — одна сторінка з чотирма вкладками. У схемі — 13 сторінок зі спільним меню ліворуч; склад меню залежить від сегмента клієнта (перемикач на огляді кабінету). Що намалювати:</p>
+      <ol class="sm col" style="gap:6px;padding-left:18px">${DZ_TODO.map(([id, t, d]) => `<li><b>${t}</b> (${go(id, 'схема')}${DESIGN_PART[id] ? ', частково є' : ''}): ${d}.</li>`).join('')}</ol>
+      <p class="sm"><b>Вхід</b> (${go('login', 'схема')}): лишаємо телефон + код без пароля (у Епіцентру пароль). Поруч посилання «Купую для компанії» — веде в «Компанія й документи».</p>
+      <p class="sm"><b>Стани для кожної сторінки кабінету:</b> порожньо (замовлень, списків, заявок ще немає) з посиланням у каталог; завантаження; помилка; мобільна версія — меню кабінету згорнуте в «Меню кабінету» над вмістом.</p>
+      <h2>Усі сторінки: стан дизайну</h2>
+      ${tbl(rows)}
+    </div>`);
+  },
+  notes: [],
+  market: [], avoid: []});
+
+Object.assign(STATES, {
+  'account-order': {s: ['Действие недоступно: кнопка скрыта', 'Отменён: причина и возврат денег', 'Ожидает оплаты: кнопка оплаты'], e: ['refund при отмене', 'add_to_cart (повтор)']},
+  'account-returns': {s: ['Нет заказов для возврата', 'Срок возврата прошёл: подсказка', 'Заявка создана: номер'], e: ['return_request (своё)']},
+  'account-lists': {s: ['Пустой список: ссылка в каталог', 'Товар закончился: замена', 'Цена изменилась: метка'], e: ['add_to_wishlist', 'add_to_cart']},
+  'account-card': {s: ['Не вошёл: «Отримати картку»', 'Высший уровень', 'Чек не найден'], e: ['card_level_up (своё)']},
+  'account-segments': {s: ['Сегмент не выбран: розница', 'Компания без ЄДРПОУ: ждёт подтверждения'], e: ['user_property customer_segment', 'select_segment (своё)']},
+  'account-requests': {s: ['Нет заявок', 'Прорахунок готов: корзина', 'Вне рабочего времени'], e: ['generate_lead']},
+  'account-b2b': {s: ['Компания не найдена в реестре', 'Компания уже добавлена коллегой: запрос доступа', 'Неплательщик НДС: счёт без НДС'], e: ['sign_up (business)']},
+});
+NEW_23.forEach(id => { const p = PAGES.find(x => x.id === id); if (p && STATES[id]) p.st = STATES[id]; });
 PAGES.sort((a, b) => ORDER.indexOf(a.id) - ORDER.indexOf(b.id));
 
 const pg = id => PAGES.find(x => x.id === id);
@@ -877,7 +1092,6 @@ pg('tracking').view = () => {
 
 pg('login').view = () => site(`<h1>Вхід у кабінет</h1><div class="bx col" style="max-width:420px;margin-top:8px">${S.lg ? `<span class="sm">Код надіслано на ${esc(S.lg)}. У прототипі підійде будь-який.</span><label class="field">Код із SMS<input id="lg-c" inputmode="numeric"></label><button class="btn p w" data-lg="2">Увійти</button>` : `<label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-lg="1">Отримати код</button><button class="btn l w" data-lg="3">Увійти через Google</button><span class="mut">Новий клієнт? Після коду лише вкажіть ім'я. Пароль не потрібен.</span>`}</div><div class="sm mut" style="margin-top:8px">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`);
 
-pg('account').view = () => S.user ? site(`<h1>Мій кабінет</h1><div class="bx col" style="margin-top:8px"><b>Останні замовлення</b>${S.orders.length ? S.orders.map((o, k) => `<div class="row btw sm"><span>№${o.n} · Прийнято · ${uah(o.sum)}</span><button class="btn l sm" data-reorder="${k}">Повторити</button></div>`).join('') : `<span class="sm mut">Замовлень ще немає. ${go('catalog', 'До каталогу')}</span>`}</div><div class="g3" style="margin-top:10px"><div class="bx col"><b>Адреси об'єктів</b><span class="sm">Квартира, Холодна Гора</span><span class="sm">Дача, Мерефа</span><button class="btn l sm" data-toast="Прототип: адреса не зберігається">Додати об'єкт</button></div><div class="bx col"><b>Мій асортимент</b><span class="sm">Товари, які купуєте регулярно</span>${go('compare', 'Обране та порівняння')}</div><div class="bx col"><b>Знижки</b><span class="sm">Ваша знижка: 3%. До 5% залишилось ${ph('1 200 грн')}</span>${go('loyalty', 'Умови')}</div></div><button class="btn l sm" style="margin-top:10px" data-lg="0">Вийти</button>`) : site(`<h1>Мій кабінет</h1><p class="sm">Увійдіть за номером телефону.</p>${go('login', 'Увійти', 'btn p')}`);
 
 function demoRoute(t, d) {
   let g = d.go; const txt = t.textContent.replace(/[›✕]/g, '').trim();
@@ -930,6 +1144,7 @@ function demoSugg(s, v) {
 const GROUPS = ['Основные', 'Каталог', 'Бренды', 'Города', 'Услуги', 'Покупка', 'Кабинет', 'Информация', 'Доверие', 'Контент', 'Юридические', 'Служебные'];
 const UI = {cur: 'overview', dev: innerWidth < 760 ? 'phone' : 'desk', tab: 'notes', marks: true};
 if (!DEMO) try { const m = localStorage.getItem('imb-dev'); if (m) UI.dev = m; } catch (e) {}
+try { const v = localStorage.getItem('imb-vmode'); if (v) UI.vmode = v; } catch (e) {}
 const $ = (s, r = document) => r.querySelector(s);
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
@@ -950,7 +1165,8 @@ function demoShell() {
   sel.innerHTML = GROUPS.map(g => { const a = PAGES.filter(x => x.g === g && !['popups', 'oneclick'].includes(x.id)); return a.length ? `<optgroup label="${g}">${a.map(x => `<option value="${x.id}">${x.name}</option>`).join('')}</optgroup>` : ''; }).join(''); sel.value = UI.cur;
   document.querySelectorAll('[data-dev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.dev === UI.dev));
   document.querySelectorAll('.shell-top [data-region]').forEach(b => b.setAttribute('aria-pressed', b.dataset.region === S.region));
-  $('#stage').innerHTML = `<div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame"><div class="wf nomk" id="wf">${p.view()}</div></div>`;
+  document.querySelectorAll('[data-vmode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.vmode === (UI.vmode || 'schema')));
+  $('#stage').innerHTML = `<div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame">${UI.vmode === 'design' && p.id !== 'design' ? designFrame(p) : `<div class="wf nomk" id="wf">${p.view()}</div>`}</div>`;
   if (S.region === 'kharkiv' && KH1.includes(p.id)) $('#wf h1')?.append(' у Харкові');
   afterRender();
 }
@@ -962,10 +1178,11 @@ function shell() {
   document.querySelectorAll('[data-dev]').forEach(b => b.setAttribute('aria-pressed', b.dataset.dev === UI.dev));
   document.querySelectorAll('.shell-top [data-region]').forEach(b => b.setAttribute('aria-pressed', b.dataset.region === S.region));
   $('#marks').setAttribute('aria-pressed', UI.marks);
+  document.querySelectorAll('[data-vmode]').forEach(b => b.setAttribute('aria-pressed', b.dataset.vmode === (UI.vmode || 'schema')));
   const stage = $('#stage'), notes = $('#notes');
   if (!p) { stage.innerHTML = UI.cur === 'ia' ? ia() : overview(); notes.hidden = true; $('.shell').classList.add('ov'); return; }
   notes.hidden = false; $('.shell').classList.remove('ov');
-  stage.innerHTML = `<div class="pagehead"><h1>${p.name}</h1><span class="tag ${p.pr.startsWith('Запуск') ? '' : 'w'}">${p.pr}</span><code>${esc(kurl(p.url))}</code></div><div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame"><div class="wf ${UI.marks ? '' : 'nomk'}" id="wf">${p.view()}</div></div>`;
+  stage.innerHTML = `<div class="pagehead"><h1>${p.name}</h1><span class="tag ${p.pr.startsWith('Запуск') ? '' : 'w'}">${p.pr}</span><code>${esc(kurl(p.url))}</code></div><div class="frame ${UI.dev === 'phone' ? 'phone' : ''}" id="frame">${UI.vmode === 'design' && p.id !== 'design' ? designFrame(p) : `<div class="wf ${UI.marks ? '' : 'nomk'}" id="wf">${p.view()}</div>`}</div>`;
   notes.innerHTML = `<h2>${p.name}</h2><div class="tabs" role="tablist">${[['notes', 'Решения'], ['market', 'Конкуренты'], ['st', 'Состояния'], ['seo', 'SEO']].map(([k, t]) => `<button role="tab" aria-selected="${UI.tab === k}" data-ntab="${k}">${t}</button>`).join('')}</div>${notePanel(p)}`;
   if (S.region === 'kharkiv' && KH1.includes(p.id)) $('#wf h1')?.append(' у Харкові');
   afterRender();
@@ -1036,6 +1253,9 @@ document.addEventListener('click', e => {
   if (d.addpair) { addCart(d.addpair, PROD[d.addpair].sel, 1); addCart('tape', 0, 1); return modal('added'); }
   if (d.addcm !== undefined) { (S.cmr || []).forEach(x => addCart(x.id, 0, x.n)); return open_('cart'); }
   if (d.htab) { S.htab = d.htab; return shell(); }
+  if (d.seg) { S.seg = d.seg; return shell(); }
+  if (d.lvl !== undefined) { S.lvl = +d.lvl; return shell(); }
+  if (d.vmode) { UI.vmode = d.vmode; try { localStorage.setItem('imb-vmode', UI.vmode); } catch (x) {} return shell(); }
   if (d.zero !== undefined) { S.zero = +d.zero; return shell(); }
   if (d.mroot !== undefined) { S.mroot = d.mroot === 'back' ? null : +d.mroot; return modal('menu'); }
   if (d.open === 'menu') S.mroot = null;
