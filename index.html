@@ -487,7 +487,7 @@ page({id: 'oneclick', g: 'Покупка', name: 'Купить в 1 клик', p
 
 page({id: 'login', g: 'Кабинет', name: 'Вход и регистрация', pr: 'Запуск', url: '/login',
   seo: {t: 'Вхід | IM BAU', h1: 'Вхід у кабінет', ld: '—', idx: 'noindex'},
-  view: () => site(`<h1>Вхід і реєстрація</h1>` + B(1, `<div class="bx col" style="max-width:420px"><div class="bx s sm"><span class="reg-badge">−3 %</span> <b>Нові клієнти отримують −3 % на всі покупки</b> одразу після реєстрації, далі 5/7/10 % за сумою покупок. ${go('loyalty', 'Умови')}</div><label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: SMS не надсилається">Отримати код</button><button class="btn l w" data-toast="Прототип: вхід не виконується">Увійти через Google</button><span class="mut">Новий клієнт? Після коду лише вкажіть ім'я. Пароль не потрібен.</span></div>`) + B(2, `<div class="sm mut">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`)),
+  view: () => site(`<h1>Вхід і реєстрація</h1>` + B(1, `<div class="bx col" style="max-width:420px"><div class="bx s sm"><span class="reg-badge">−3 %</span> <b>Нові клієнти отримують −3 % на всі покупки</b> одразу після реєстрації, далі 5/7/10 % за сумою покупок. ${go('loyalty', 'Умови')}</div><label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-toast="Прототип: SMS не надсилається">Отримати код</button><button class="btn l w" data-toast="Прототип: вхід не виконується">Увійти через Google</button><span class="mut">Новий клієнт? Після коду вкажіть ім'я й оберіть, хто ви. Пароль не потрібен.</span></div>`) + B(3, `<div class="bx col" style="max-width:420px"><b class="sm">Новий клієнт, після коду</b><label class="field">Ім’я<input placeholder="Олександр"></label>${segPick()}<button class="btn p w" data-toast="Прототип: кабінет створено, знижка −3 % діє">Зареєструватися</button></div>`) + B(2, `<div class="sm mut">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`)),
   notes: [],
   market: [], avoid: []});
 
@@ -804,6 +804,8 @@ const SEGS = {
   shop: {t: 'Магазин', who: 'Магазин (перепродаж)', how: 'ЄДРПОУ або ІПН + договір', price: 'Оптовий прайс, мінімальна партія', menu: ['account-requests', 'account-b2b']},
 };
 const seg = () => SEGS[S.seg] ? S.seg : 'self';
+const REG_HINT = {'self': 'Накопичувальна картка: −3 % одразу, далі 5/7/10 %', 'master': 'ФОП не обов’язковий. Картка + ціна від обсягу', 'company': 'ЄДРПОУ додасте в кабінеті, менеджер підтвердить. Ціна під обсяг, рахунок з ПДВ', 'shop': 'ЄДРПОУ або ІПН + договір. Оптовий прайс'};
+const segPick = () => `<div class="col" style="gap:4px"><span class="sm b">Хто ви?</span><div class="row" role="group" aria-label="Хто ви">${Object.entries(SEGS).map(([k, v]) => `<button type="button" class="chip${k === seg() ? ' on' : ''}" data-seg="${k}" aria-pressed="${k === seg()}">${v.t}</button>`).join('')}</div><span class="mut">${REG_HINT[seg()]}. Змінити можна в профілі.</span></div>`;
 const isBiz = () => ['company', 'shop'].includes(seg());
 
 const TIERS = [[0, 3], [2000, 5], [7000, 7], [10000, 10]], SPENT = 2788;
@@ -969,7 +971,7 @@ const DESIGN_PART = {account: 'є вкладки замовлень, адрес,
 const NEW_23 = ['account', 'account-segments', 'account-orders', 'account-order', 'account-requests', 'account-returns', 'account-card', 'account-lists', 'account-tints', 'account-addr', 'account-reviews', 'account-team', 'account-profile', 'account-b2b'];
 const NEW_26 = ['account', 'account-segments', 'account-team', 'account-profile', 'account-returns', 'returns', 'login', 'cart', 'home', 'pro'];
 const DZ_26 = [
-  ['account-segments', 'Лише чотири сегменти', '«Хто ви»: Для себе, Майстер, Юр. особа, Магазин. «Бригаду» прибрано, «Компанія» тепер «Юр. особа». Майстер може бути без ФОП — ФОП не обов’язковий. Змінено перемикачі кабінету, профіль, таблицю сегментів, огляд; у формі pro.html дизайну теж лишити чотири'],
+  ['account-segments', 'Лише чотири сегменти', '«Хто ви»: Для себе, Майстер, Юр. особа, Магазин — вибір і під час реєстрації (крок після коду, разом з ім’ям). «Бригаду» прибрано, «Компанія» тепер «Юр. особа». Майстер може бути без ФОП — ФОП не обов’язковий. Змінено перемикачі кабінету, профіль, таблицю сегментів, огляд; у формі pro.html дизайну теж лишити чотири'],
   ['account-team', 'Співробітники замість бригади', 'сторінка «Співробітники» лише для юр. особи: ролі, ліміти, запрошення за телефоном'],
   ['returns', 'Форма повернення на сайті й у кабінеті', 'на сторінці «Обмін та повернення» повна форма без входу (номер замовлення або чека, телефон, товар і кількість, причина, спосіб, фото при браку); у кабінеті — форма з вибором товарів із замовлення; обидві ведуть одна на одну'],
   ['home', 'Знижка за реєстрацію (як на gabbi.ua)', 'для того, хто не увійшов: смуга над шапкою «−3 % на всі покупки за реєстрацію» з кнопкою «Зареєструватися», у шапці мітка −3 % біля «Увійти · Реєстрація»; у кошику — рядок «Зареєструйтесь і заплатите на N грн менше»; на сторінці входу — що дає реєстрація. Після входу смуга зникає, у кошику видно знижку картки'],
@@ -1118,7 +1120,7 @@ pg('tracking').view = () => {
     + (r ? (o ? `<div class="bx col" style="margin-top:12px"><div class="row btw"><b>Замовлення №${o.n}</b><span class="ok">Прийнято</span></div><div class="bar"><i style="width:25%"></i></div><div class="sm mut">Прийнято → Збирається → Передано → Отримано</div>${orderLines(o)}</div>` : `<div class="bx s sm" style="margin-top:12px">Замовлення №${esc(r)} не знайдено. Перевірте номер або <button class="ic" style="height:26px" data-open="callback">зателефонуйте нам</button>.</div>`) : (S.orders.length ? '' : `<p class="sm mut" style="margin-top:8px">Оформіть замовлення в прототипі, і його номер підставиться сюди.</p>`)));
 };
 
-pg('login').view = () => site(`<h1>Вхід і реєстрація</h1><div class="bx col" style="max-width:420px;margin-top:8px"><div class="bx s sm"><span class="reg-badge">−3 %</span> <b>Нові клієнти отримують −3 % на всі покупки</b> одразу після реєстрації. ${go('loyalty', 'Умови')}</div>${S.lg ? `<span class="sm">Код надіслано на ${esc(S.lg)}. У прототипі підійде будь-який.</span><label class="field">Код із SMS<input id="lg-c" inputmode="numeric"></label><button class="btn p w" data-lg="2">Увійти</button>` : `<label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-lg="1">Отримати код</button><button class="btn l w" data-lg="3">Увійти через Google</button><span class="mut">Новий клієнт? Після коду лише вкажіть ім'я. Пароль не потрібен.</span>`}</div><div class="sm mut" style="margin-top:8px">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`);
+pg('login').view = () => site(`<h1>Вхід і реєстрація</h1><div class="bx col" style="max-width:420px;margin-top:8px"><div class="bx s sm"><span class="reg-badge">−3 %</span> <b>Нові клієнти отримують −3 % на всі покупки</b> одразу після реєстрації. ${go('loyalty', 'Умови')}</div>${S.lg ? `<span class="sm">Код надіслано на ${esc(S.lg)}. У прототипі підійде будь-який.</span><label class="field">Ім’я (для нових клієнтів)<input id="lg-n" value="${esc(S.lgn || '')}" oninput="S.lgn=this.value"></label>${segPick()}<label class="field">Код із SMS<input id="lg-c" inputmode="numeric" value="${esc(S.lgc || '')}" oninput="S.lgc=this.value"></label><button class="btn p w" data-lg="2">Увійти</button>` : `<label class="field">Телефон<input id="lg-t" inputmode="tel" value="+38 0"></label><button class="btn p w" data-lg="1">Отримати код</button><button class="btn l w" data-lg="3">Увійти через Google</button><span class="mut">Новий клієнт? Після коду вкажіть ім'я й оберіть, хто ви. Пароль не потрібен.</span>`}</div><div class="sm mut" style="margin-top:8px">Навіщо кабінет: статуси, повтор замовлення, адреси об'єктів. ${go('checkout', 'Купити без реєстрації')}</div>`);
 
 
 function demoRoute(t, d) {
@@ -1157,7 +1159,7 @@ function demoClick(t, d) {
   if (d.track !== undefined) { const n = $('#tr-n')?.value.trim(); if (!n) { fieldErr('tr-n', 'Вкажіть номер замовлення'); return true; } S.trk = n; shell(); return true; }
   if (d.lg !== undefined) {
     if (d.lg === '1') { const v = $('#lg-t')?.value; if (!telOk(v)) { fieldErr('lg-t', 'Вкажіть телефон повністю'); return true; } S.lg = v; shell(); return true; }
-    if (d.lg === '2') { if (!$('#lg-c')?.value.trim()) { fieldErr('lg-c', 'Введіть код'); return true; } S.user = 1; S.lg = ''; open_('account'); return true; }
+    if (d.lg === '2') { if (!$('#lg-c')?.value.trim()) { fieldErr('lg-c', 'Введіть код'); return true; } S.user = 1; S.lg = ''; S.lgc = ''; open_('account'); return true; }
     if (d.lg === '3') { S.user = 1; open_('account'); return true; }
     S.user = 0; open_('home'); return true;
   }
